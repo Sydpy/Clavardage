@@ -1,16 +1,34 @@
 package org.etudinsa.clavardage.sessions;
 
+import java.io.BufferedReader;
+import java.io.IOException;
+import java.io.InputStreamReader;
+import java.net.ServerSocket;
+import java.net.Socket;
 import java.util.Observable;
 
-class SessionListener extends Observable {
+class SessionListener extends Observable implements Runnable {
 
-	private static int LISTENING_PORT = 1707;
+	final static int LISTENING_PORT = 1707;
 	
-	public SessionListener() {
-		// TODO Auto-generated constructor stub
+	private ServerSocket ssocket;
+	
+	public SessionListener() throws IOException {
+		this.ssocket = new ServerSocket(LISTENING_PORT);
 	}	
-	private void run() {
-		// TODO Auto-generated method stub
+	
+	public void run() {
+		boolean not_done = true;
+		while(not_done) {
+			try {
+				Socket client = ssocket.accept();
+				BufferedReader in = new BufferedReader(new InputStreamReader(client.getInputStream()));
+				String msg = in.readLine();
+				
+			} catch (IOException e) {
+				e.printStackTrace();
+			}
+		}
 
 	}
 
