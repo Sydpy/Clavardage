@@ -6,7 +6,7 @@ import java.util.List;
 import java.util.Observable;
 import java.util.Observer;
 
-public class UserManager implements Observer {
+public class UserManager extends Observable implements Observer {
 
     private static UserManager instance = new UserManager();
 
@@ -45,25 +45,36 @@ public class UserManager implements Observer {
         return userDB;
     }
 
-    private void retrieveUserDB() {
+    private boolean isUserDBAuthority() {
+        return userDB.indexOf(myUser) == userDB.size() - 1;
+    }
 
+    private void retrieveUserDB() {
+        //TODO
     }
 
     private void advertiseMyself() {
+        //TODO
+    }
 
+    private void sendUserDB(InetAddress ip) {
+        //TODO
     }
 
     @Override
     public void update(Observable observable, Object o) {
 
         if (o instanceof List) {
-            this.userDB = (List<User>) o;
-        } else if (o instanceof User) {
-            this.userDB.add((User) o);
-        }
-        else if (o instanceof InetAddress) {
-            //TODO
-        }
 
+            this.userDB = (List<User>) o;
+
+        } else if (o instanceof User) {
+
+            this.userDB.add((User) o);
+
+        }
+        else if (o instanceof InetAddress && isUserDBAuthority()) {
+            sendUserDB((InetAddress) o);
+        }
     }
 }
