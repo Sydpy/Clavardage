@@ -7,7 +7,7 @@ import java.util.Observer;
 
 import org.etudinsa.clavardage.users.User;
 
-public class SessionManager implements Observer{
+public class SessionManager extends Observable implements Observer{
 	
 	private List<Session> sessions;
 	private SessionListener sessionListener;

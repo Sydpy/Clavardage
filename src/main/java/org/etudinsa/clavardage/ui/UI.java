@@ -1,4 +1,6 @@
 package org.etudinsa.clavardage.ui;
 
-public interface UI {
+import java.util.Observer;
+
+public abstract class UI implements Observer  {
 }
