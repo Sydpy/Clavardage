@@ -18,10 +18,13 @@ public class UserManager extends Observable implements Observer {
     private List<User> userDB;
     private User myUser;
 
-    private UserManager() {
+    private UserListener userListener;
 
+    private UserManager() {}
+
+    public void start() {
         try {
-            UserListener userListener = new UserListener();
+            userListener = new UserListener();
 
             userListener.addObserver(this);
 
@@ -32,6 +35,9 @@ public class UserManager extends Observable implements Observer {
             e.printStackTrace();
             System.exit(1);
         }
+    }
+    public void stop() {
+        userListener.stop();
     }
 
     /**
@@ -132,45 +138,48 @@ public class UserManager extends Observable implements Observer {
 
         userDB = new ArrayList<>();
 
-        // We configure a timeout on the sockets to handle the case where we are alone
-        ServerSocket serverSocket = new ServerSocket(USERDB_RETRIEVE_PORT);
-        serverSocket.setSoTimeout(5000);
+        try {
+            // We configure a timeout on the sockets to handle the case where we are alone
+            ServerSocket serverSocket = new ServerSocket(USERDB_RETRIEVE_PORT);
+            serverSocket.setSoTimeout(5000);
 
-        Socket socket = serverSocket.accept();
-        socket.setSoTimeout(5000);
+            Socket socket = serverSocket.accept();
+            socket.setSoTimeout(5000);
 
-        InputStream is = socket.getInputStream();
-        ObjectInputStream objectInputStream = new ObjectInputStream(is);
+            InputStream is = socket.getInputStream();
+            ObjectInputStream objectInputStream = new ObjectInputStream(is);
 
-        synchronized (userDB) {
-            while (true) {
-                try {
-                    // Read serialized user object from the connection with the UserDB Authority
-                    User user;
-                    if ((user = (User) objectInputStream.readObject()) == null) break;
+            synchronized (userDB) {
+                while (true) {
+                    try {
+                        // Read serialized user object from the connection with the UserDB Authority
+                        User user;
+                        if ((user = (User) objectInputStream.readObject()) == null) break;
 
-                    userDB.add(user);
-                } catch (ClassNotFoundException e) {
-                    e.printStackTrace();
+                        userDB.add(user);
+                    } catch (ClassNotFoundException e) {
+                        e.printStackTrace();
+                    }
+                }
+
+                if (userDB.size() > 0) {
+                    //The UserDBAuthority 's user must be the last one on the list
+                    //as for him his address is the loopback address, we must replace it
+                    //with its known address
+                    User lastUser = userDB.remove(userDB.size() - 1);
+
+                    InetAddress userDBAuthorityAddr = socket.getInetAddress();
+                    String userDBAuthorityPseudo = lastUser.pseudo;
+                    User userDBAUthority = new User(userDBAuthorityPseudo, userDBAuthorityAddr);
+
+                    userDB.add(userDBAUthority);
                 }
             }
 
-            if (userDB.size() > 0) {
-                //The UserDBAuthority 's user must be the last one on the list
-                //as for him his address is the loopback address, we must replace it
-                //with its known address
-                User lastUser = userDB.remove(userDB.size() - 1);
+            socket.close();
+            serverSocket.close();
 
-                InetAddress userDBAuthorityAddr = socket.getInetAddress();
-                String userDBAuthorityPseudo = lastUser.pseudo;
-                User userDBAUthority = new User(userDBAuthorityPseudo, userDBAuthorityAddr);
-
-                userDB.add(userDBAUthority);
-            }
-        }
-
-        socket.close();
-        serverSocket.close();
+        } catch(SocketTimeoutException ignored) {}
     }
 
     private void sendUserDB(InetAddress ip) throws IOException {

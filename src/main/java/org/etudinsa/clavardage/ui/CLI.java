@@ -5,13 +5,7 @@ import org.etudinsa.clavardage.users.UserManager;
 
 import java.util.Observable;
 
-public class CLI extends UI {
-
-    private static CLI instance = new CLI();
-
-    public static CLI getInstance() {
-        return instance;
-    }
+public class CLI extends UI implements Runnable {
 
     private CLI() {
         UserManager.getInstance().addObserver(this);
@@ -32,4 +26,26 @@ public class CLI extends UI {
         }
 
     }
+
+    @Override
+    public void run() {
+
+        System.out.println("Starting ClavardageCLI.");
+
+        System.out.println("Doing something.");
+
+        System.out.println("Exiting ClavardageCLI.");
+    }
+
+    public static void main(String[] args) {
+
+        UserManager.getInstance().start();
+        SessionManager.getInstance().start();
+
+        new CLI().run();
+
+        SessionManager.getInstance().stop();
+        UserManager.getInstance().stop();
+    }
+
 }

@@ -26,6 +26,7 @@ class UserListener extends Observable implements Runnable {
 
     UserListener() throws SocketException {
         this.socket = new DatagramSocket(LISTENING_PORT);
+        this.socket.setSoTimeout(2000);
     }
 
     @Override
@@ -34,6 +35,8 @@ class UserListener extends Observable implements Runnable {
         byte[] buffer = new byte[1024];
 
         while (true) {
+
+            if (socket.isClosed()) return;
 
             Arrays.fill(buffer, (byte) 0);
 
@@ -48,11 +51,14 @@ class UserListener extends Observable implements Runnable {
 
                 notifyObservers(new ReceivedBroadcastMessage(message, packet.getAddress()));
 
+            } catch (SocketTimeoutException ignored) {
             } catch (IOException | ClassNotFoundException e) {
                 e.printStackTrace();
             }
         }
     }
 
-
+    void stop() {
+        socket.close();
+    }
 }
