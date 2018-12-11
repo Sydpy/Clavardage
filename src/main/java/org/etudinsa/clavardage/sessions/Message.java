@@ -10,8 +10,10 @@ public class Message {
 	private User sender;
 	private User recipient;
 	
-	public Message(String content) {
+	public Message(String content, User destUser, User srcUser) {
 		this.content = content;
+		this.recipient = destUser;
+		this.sender = srcUser;
 		this.date = new Date();
 	}
 
