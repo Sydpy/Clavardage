@@ -15,7 +15,7 @@ public class Session {
 	public Session(User distantUser) throws IOException {
 		this.distantUser = distantUser;
 		this.messages = new ArrayList<Message>();
-		this.socket = new Socket(distantUser.getIp(),SessionListener.LISTENING_PORT);
+		this.socket = new Socket(distantUser.ip,SessionListener.LISTENING_PORT);
 	}
 	
 	public void close() {
