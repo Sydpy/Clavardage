@@ -1,27 +1,17 @@
 package org.etudinsa.clavardage.users;
 
 import java.net.InetAddress;
+import java.util.Date;
 import java.util.Objects;
 
 public class User {
-    private String pseudo;
-    private InetAddress ip;
 
-    public User(String pseudo, InetAddress ip) {
+    public final String pseudo;
+    public final InetAddress ip;
+
+    User(String pseudo, InetAddress ip) {
         this.pseudo = pseudo;
         this.ip = ip;
-    }
-
-    public void setPseudo(String pseudo) {
-        this.pseudo = pseudo;
-    }
-
-    public String getPseudo() {
-        return pseudo;
-    }
-
-    public InetAddress getIp() {
-        return ip;
     }
 
     @Override
