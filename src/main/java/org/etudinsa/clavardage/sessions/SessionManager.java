@@ -2,14 +2,14 @@ package org.etudinsa.clavardage.sessions;
 
 import java.io.IOException;
 import java.io.PrintWriter;
-import java.net.SocketException;
+import java.net.Socket;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Observable;
 import java.util.Observer;
 
-import org.etudinsa.clavardage.users.User;
 import org.etudinsa.clavardage.users.UserManager;
+import org.etudinsa.clavardage.users.User;
 
 public class SessionManager extends Observable implements Observer{
 	
@@ -18,8 +18,7 @@ public class SessionManager extends Observable implements Observer{
     public static SessionManager getInstance() {
         return instance;
     }
-
-
+    
 	private List<Session> sessions = new ArrayList<>();
 	private PrintWriter out = null;
 
@@ -45,19 +44,16 @@ public class SessionManager extends Observable implements Observer{
 	   sessionListener.stop();
 	}
 
-	public void openSession(User distantUser) {
-		try {
-			this.sessions.add(new Session(distantUser));
-		} catch (IOException e) {
-			System.err.println("Session socket not created");
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		}
+	public Session openSession(String pseudo) throws IOException {
+		User distantUser = UserManager.getInstance().getUserByPseudo(pseudo);
+		Session nSession = new Session(distantUser);
+		this.sessions.add(nSession);
+		return nSession;
 	}
 
-	public void closeSession(User distantUser) {
+	public void closeSession(String pseudo) {
 		try {
-			Session session = getSessionByDistantUser(distantUser);
+			Session session = getSessionByDistantUserPseudo(pseudo);
 			session.close();
 			this.sessions.remove(session);
 		} catch (Exception e) {
@@ -66,32 +62,52 @@ public class SessionManager extends Observable implements Observer{
 		}
 	}
 
-	public void sendMessage(String content, User receiver) throws Exception {
+	//We get the session between 2 users or create it if it doesn't exist 
+	//and we create a socket to send the message
+	//We notify the UI with the message sent
+	public void sendMessage(String content, String pseudo) throws Exception {
+		User receiver = UserManager.getInstance().getUserByPseudo(pseudo);
 		User myUser = UserManager.getInstance().getMyUser();
 		if (myUser == null) {
-			throw new Exception("You need to create a user !!");
+			throw new Exception("You need to create a user!!");
+		}
+		if (receiver == null) {
+			throw new Exception("No user with this pseudo!!");
 		}
 		Message message = new Message(content, receiver, myUser);
-		Session session = getSessionByDistantUser(receiver);
-		out = new PrintWriter(session.getSocket().getOutputStream(),true);
-		out.println(message);
+		Session session = getSessionByDistantUserPseudo(pseudo);
+		if (session == null) {
+			session = openSession(pseudo);
+		}
+		Socket socket = new Socket(receiver.ip,SessionListener.LISTENING_PORT);
+		out = new PrintWriter(socket.getOutputStream(),true);
+		out.println(message.getContent());
 		session.addMessage(message);
+		socket.close();
+		notifyObservers(message);
 	}
 
-	private Session getSessionByDistantUser(User dUser) throws Exception {
+	public Session getSessionByDistantUserPseudo(String pseudo) throws Exception {
+		User dUser = UserManager.getInstance().getUserByPseudo(pseudo);
+		if (dUser == null) {
+			throw new Exception("No user with this pseudo!!");
+		}
 		for (int i = 0; i < this.sessions.size(); i++) {
 			if (this.sessions.get(i).getDistantUser() == dUser) {
 				return this.sessions.get(i);
 			}
 		}
-		throw new Exception("No Session with this user!!");
+		return null;
 	}
 
+	//When we receive a message, we add it to the session or create one if it doesn't already exist
 	private void receiveMessage(Message message) {
 		try {
-			Session session = getSessionByDistantUser(message.getSender());
+			Session session = getSessionByDistantUserPseudo(message.getSender().pseudo);
+			if (session == null) {
+				session = openSession(message.getSender().pseudo);
+			}
 			session.addMessage(message);
-			this.sessions.remove(session);
 		} catch (Exception e) {
 			System.out.println("Session needed to receive the message");
 			e.printStackTrace();
