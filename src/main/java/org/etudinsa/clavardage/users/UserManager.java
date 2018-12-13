@@ -69,8 +69,8 @@ public class UserManager extends Observable implements Observer {
         return myUser;
     }
 
-    synchronized public Object[] getUserDB() {
-        return userDB.toArray();
+    synchronized public User[] getUserDB() {
+        return userDB.toArray(new User[userDB.size()]);
     }
 
     /**
