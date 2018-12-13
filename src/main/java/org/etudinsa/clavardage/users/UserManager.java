@@ -151,9 +151,19 @@ public class UserManager extends Observable implements Observer {
                     try {
                         // Read serialized user object from the connection with the UserDB Authority
                         User user;
-                        if ((user = (User) objectInputStream.readObject()) == null) break;
-
-                        userDB.add(user);
+                        try {
+                        	user = (User) objectInputStream.readObject();
+                        	if (user == null) {
+                        		System.out.println("user received for database: null");
+                        		break;
+                        	}
+                        	System.out.println("user received for database: " + user);
+                        	
+                        	userDB.add(user);
+                        } catch (EOFException e) {
+                        	System.out.println("eof exception we break");
+                        	break;
+                        }
                     } catch (ClassNotFoundException e) {
                         e.printStackTrace();
                     }
@@ -187,6 +197,7 @@ public class UserManager extends Observable implements Observer {
             for (User user : userDB) {
                 objectOutputStream.writeObject(user);
                 objectOutputStream.flush();
+                System.out.println("message sent " + user);
             }
         }
         

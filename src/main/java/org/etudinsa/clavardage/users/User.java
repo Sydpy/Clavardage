@@ -14,6 +14,11 @@ public class User implements Serializable {
         this.pseudo = pseudo;
         this.ip = ip;
     }
+    
+    @Override
+    public String toString() {
+    	return this.pseudo + " " + this.ip;
+    }
 
     @Override
     public boolean equals(Object o) {
