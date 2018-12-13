@@ -7,6 +7,9 @@ import org.etudinsa.clavardage.users.User;
 import org.etudinsa.clavardage.users.UserManager;
 
 import java.io.IOException;
+import java.net.InetAddress;
+import java.net.NetworkInterface;
+import java.net.SocketException;
 import java.util.Observable;
 import java.util.Scanner;
 
@@ -36,9 +39,12 @@ public class CLI extends UI implements Runnable {
     private CLIMode mode = CLIMode.HOME;
     private String distantUser = null;
 
+    private UserManager userManager = UserManager.getInstance();
+    private SessionManager sessionManager = SessionManager.getInstance();
+
     private CLI() {
-        UserManager.getInstance().addObserver(this);
-        SessionManager.getInstance().addObserver(this);
+        userManager.addObserver(this);
+        sessionManager.addObserver(this);
     }
 
     @Override
@@ -163,16 +169,29 @@ public class CLI extends UI implements Runnable {
         }
     }
 
-    private void createUser() {
+    private void connect() {
 
         Scanner sc = new Scanner(System.in);
-        System.out.println("Choose a pseudo : ");
-        try {
-            UserManager.getInstance().createMyUser(sc.nextLine());
-        } catch (IOException e) {
-            e.printStackTrace();
-            createUser();
+
+        while (!userManager.isConnected()) {
+            System.out.print("Choose a pseudo : ");
+            try {
+                userManager.joinNetwork(sc.nextLine());
+            } catch (Exception e) {
+                System.out.println(e.toString());
+            }
         }
+
+        sessionManager.start();
+    }
+
+    private void disconnect() {
+        try {
+            userManager.leaveNetwork();
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        sessionManager.stop();
     }
 
     @Override
@@ -180,18 +199,11 @@ public class CLI extends UI implements Runnable {
 
         Scanner sc = new Scanner(System.in);
 
-        System.out.println("Choose a pseudo : ");
-        try {
-            UserManager.getInstance().createMyUser(sc.nextLine());
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-
+        connect();
 
         System.out.println("Starting ClavardageCLI.");
         printHomeHelp();
         System.out.println();
-
 
         printPrompt();
         Command cmd = Command.fromString(sc.nextLine());
@@ -204,17 +216,13 @@ public class CLI extends UI implements Runnable {
         }
 
         System.out.println("Exiting ClavardageCLI.");
+
+        disconnect();
     }
 
-    public static void main(String[] args) {
-
-        UserManager.getInstance().start();
-        SessionManager.getInstance().start();
+    public static void main(String[] args) throws SocketException {
 
         new CLI().run();
-
-        SessionManager.getInstance().stop();
-        UserManager.getInstance().stop();
     }
 
 }
