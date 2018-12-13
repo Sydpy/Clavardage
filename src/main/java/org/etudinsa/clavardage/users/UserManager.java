@@ -15,31 +15,43 @@ public class UserManager extends Observable implements Observer {
     }
 
 
-    private List<User> userDB;
-    private String myPseudo;
-
+    private List<User> userDB = new ArrayList<>();
+    private User myUser;
     private UserListener userListener;
+
+    private boolean connected = false;
 
     private UserManager() {}
 
-    public void start() {
-        try {
-            userListener = new UserListener();
+    public void joinNetwork(NetworkInterface networkInterface, String pseudo) throws Exception {
 
-            userListener.addObserver(this);
+        if (connected) throw new Exception("Already connected");
 
-            Thread userListenerThread = new Thread(userListener);
-            userListenerThread.start();
+        userDB = retrieveUserDB();
 
-        } catch (SocketException e) {
-            e.printStackTrace();
-            System.exit(1);
-        }
+        User userByPseudo = getUserByPseudo(pseudo);
+        if (userByPseudo != null)
+            throw new Exception("Pseudo already taken.");
+
+        InetAddress ip = networkInterface.getInetAddresses().nextElement();
+        myUser = new User(pseudo, ip);
+        userDB.add(myUser);
+
+        sendBroadcast(pseudo.getBytes());
+
+        startListener();
+
+        connected = true;
     }
-    public void stop() {
-        userListener.stop();
-    }
 
+    public void leaveNetwork() throws Exception {
+
+        if (!connected) throw new Exception("Already connected");
+        //TODO : Broadcast USERLEAVING
+        stopListener();
+
+        connected = false;
+    }
     /**
      * @param ip
      * @return the User instance based on the ip
@@ -66,54 +78,52 @@ public class UserManager extends Observable implements Observer {
      * @return the User instance associated with this application
      */
     synchronized public User getMyUser() {
-        return getUserByPseudo(myPseudo);
+        return myUser;
     }
 
     synchronized public User[] getUserDB() {
         return userDB.toArray(new User[userDB.size()]);
     }
 
-    /**
-     * @param pseudo pseudo to give to the application's User
-     * @throws IOException if the retrieval of the User DB or the advertising of the application
-     *
-     * create the application's User
-     */
-    synchronized public void createMyUser(String pseudo) throws IOException {
+    public boolean isConnected() {
+        return connected;
+    }
 
-        // We can create a user for the current application only if there
-        // is none already created
-        assert myPseudo == null;
+    private void startListener() throws SocketException {
+        userListener = new UserListener();
 
-        // Retrieve userDB from the current UserDBAuthority of the network
-        retrieveUserDB();
-        
-        this.myPseudo = pseudo;
+        userListener.addObserver(this);
 
-        
-        // Advertise the fact that we are now a user of the network
-        advertiseNewUser(pseudo);        
+        Thread userListenerThread = new Thread(userListener);
+        userListenerThread.start();
+    }
+
+    private void stopListener() {
+        userListener.stop();
     }
 
     /**
      * @return is the application responsible of delivering the user database
      */
     synchronized private boolean isUserDBAuthority() {
-    	
-    	int index = userDB.indexOf(getMyUser());
-    	
-        return index != -1 && index == userDB.size() - 1;
+
+        if (!connected)
+            return false;
+
+        int myUserIndex = userDB.indexOf(myUser);
+        if (myUserIndex == -1) return false;
+
+        int userDBSize = userDB.size();
+        return myUserIndex == userDBSize - 1;
     }
 
-    private void sendBroadcast(BroadcastMessage mes) throws IOException {
+    private void sendBroadcast(byte[] data) throws IOException {
+
+        assert data.length <= 1024;
 
         // Create a UDP broadcast socket
         DatagramSocket socket = new DatagramSocket();
         socket.setBroadcast(true);
-
-        byte[] data = mes.toString().getBytes();
-
-        assert data.length <= 1024;
 
         // Broadcast it
         InetAddress broadcastAddr = InetAddress.getByName("255.255.255.255");
@@ -124,52 +134,35 @@ public class UserManager extends Observable implements Observer {
         socket.close();
     }
 
-    private void advertiseNewUser(String pseudo) throws IOException {
-        sendBroadcast(new BroadcastMessage(BroadcastMessage.Type.NEWUSER, pseudo));
-    }
+    private ArrayList<User> retrieveUserDB() throws IOException {
 
-    private void retrieveUserDB() throws IOException {
-    	
-        userDB = new ArrayList<>();
-        
+        ArrayList<User> userDB = new ArrayList<>();
+
         // Ask all the network in hope that the UserDBAuthority answers
-        sendBroadcast(new BroadcastMessage(BroadcastMessage.Type.USERDB_REQUEST));
+        UserMessage dbReq = new UserMessage(UserMessage.Type.USERDB_REQUEST);
+        sendBroadcast(dbReq.toString().getBytes());
 
         try {
             // We configure a timeout on the sockets to handle the case where we are alone
             ServerSocket serverSocket = new ServerSocket(USERDB_RETRIEVE_PORT);
             serverSocket.setSoTimeout(5000);
-            
+
             Socket socket = serverSocket.accept();
             socket.setSoTimeout(5000);
 
             InputStream is = socket.getInputStream();
             ObjectInputStream objectInputStream = new ObjectInputStream(is);
 
-            synchronized (userDB) {
-                while (true) {
-                    try {
-                        // Read serialized user object from the connection with the UserDB Authority
-                        User user;
-                        if ((user = (User) objectInputStream.readObject()) == null) break;
+            while (true) {
+                try {
+                    // Read serialized user object from the connection with the UserDB Authority
+                    User user;
+                    if ((user = (User) objectInputStream.readObject()) == null) break;
 
-                        userDB.add(user);
-                    } catch (ClassNotFoundException e) {
-                        e.printStackTrace();
-                    }
-                }
-
-                if (userDB.size() > 0) {
-                    //The UserDBAuthority 's user must be the last one on the list
-                    //as for him his address is the loopback address, we must replace it
-                    //with its known address
-                    User lastUser = userDB.remove(userDB.size() - 1);
-
-                    InetAddress userDBAuthorityAddr = socket.getInetAddress();
-                    String userDBAuthorityPseudo = lastUser.pseudo;
-                    User userDBAUthority = new User(userDBAuthorityPseudo, userDBAuthorityAddr);
-
-                    userDB.add(userDBAUthority);
+                    userDB.add(user);
+                } catch (EOFException ignored) {
+                } catch (ClassNotFoundException e) {
+                    e.printStackTrace();
                 }
             }
 
@@ -177,6 +170,8 @@ public class UserManager extends Observable implements Observer {
             serverSocket.close();
 
         } catch(SocketTimeoutException ignored) {}
+
+        return userDB;
     }
 
     private void sendUserDB(InetAddress ip) throws IOException {
@@ -189,27 +184,27 @@ public class UserManager extends Observable implements Observer {
                 objectOutputStream.flush();
             }
         }
-        
+
         objectOutputStream.close();
         socket.close();
     }
 
     @Override
     public void update(Observable observable, Object o) {
-    	
+
         if (o instanceof UserListener.ReceivedBroadcastMessage) {
 
             InetAddress addr = ((UserListener.ReceivedBroadcastMessage) o).address;
-            BroadcastMessage bm = ((UserListener.ReceivedBroadcastMessage) o).broadcastMessage;
-            
+            UserMessage bm = ((UserListener.ReceivedBroadcastMessage) o).userMessage;
+
             switch (bm.type) {
                 case USERDB_REQUEST:
                     System.out.println("Received UserDB request.");
                     if (isUserDBAuthority()) {
-                    	System.out.println("Sending UserDB.");
+                        System.out.println("Sending UserDB.");
                         try {
                             sendUserDB(addr);
-                        	System.out.println("Done sending.");
+                            System.out.println("Done sending.");
                         } catch (IOException e) {
                             e.printStackTrace();
                         }

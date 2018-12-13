@@ -1,25 +1,24 @@
 package org.etudinsa.clavardage.users;
 
 import java.io.Serializable;
-import java.net.InetAddress;
 
-class BroadcastMessage implements Serializable {
+class UserMessage implements Serializable {
 
-    static enum Type { USERDB_REQUEST, NEWUSER, USERLEAVING }
+    enum Type { USERDB_REQUEST, NEWUSER, USERLEAVING }
 
     final Type type;
     String pseudo;
 
-    BroadcastMessage(Type type) {
+    UserMessage(Type type) {
         this.type = type;
     }
 
-    BroadcastMessage(Type type, String pseudo) {
+    UserMessage(Type type, String pseudo) {
         this.type = type;
         this.pseudo = pseudo;
     }
     
-    public static BroadcastMessage fromString(String str) throws Exception {
+    public static UserMessage fromString(String str) throws Exception {
     	
     	String[] splitted = str.split(":", 2);
     	
@@ -31,10 +30,10 @@ class BroadcastMessage implements Serializable {
     		
     		String pseudo = splitted[1].trim();
     		
-    		return new BroadcastMessage(type, pseudo);
+    		return new UserMessage(type, pseudo);
     	}
     	
-    	return new BroadcastMessage(type);
+    	return new UserMessage(type);
     }
     
     @Override

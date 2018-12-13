@@ -1,9 +1,6 @@
 package org.etudinsa.clavardage.users;
 
-import java.awt.datatransfer.StringSelection;
-import java.io.ByteArrayInputStream;
 import java.io.IOException;
-import java.io.ObjectInputStream;
 import java.net.*;
 import java.util.Arrays;
 import java.util.Observable;
@@ -12,11 +9,11 @@ class UserListener extends Observable implements Runnable {
 
     static class ReceivedBroadcastMessage {
 
-        final BroadcastMessage broadcastMessage;
+        final UserMessage userMessage;
         final InetAddress address;
 
-        ReceivedBroadcastMessage(BroadcastMessage broadcastMessage, InetAddress address) {
-            this.broadcastMessage = broadcastMessage;
+        ReceivedBroadcastMessage(UserMessage userMessage, InetAddress address) {
+            this.userMessage = userMessage;
             this.address = address;
         }
     }
@@ -46,7 +43,7 @@ class UserListener extends Observable implements Runnable {
                 socket.receive(packet);
                 byte[] data = packet.getData();
 
-                BroadcastMessage message = BroadcastMessage.fromString(new String(data));
+                UserMessage message = UserMessage.fromString(new String(data));
                 
                 setChanged();
                 notifyObservers(new ReceivedBroadcastMessage(message, packet.getAddress()));
