@@ -199,8 +199,6 @@ public class UserManager extends Observable implements Observer {
 
             InetAddress addr = ((UserListener.ReceivedBroadcastMessage) o).address;
             BroadcastMessage bm = ((UserListener.ReceivedBroadcastMessage) o).broadcastMessage;
-
-            System.out.println("UserManager : " + bm.toString());
             
             switch (bm.type) {
                 case USERDB_REQUEST:
