@@ -1,5 +1,6 @@
 package org.etudinsa.clavardage.users;
 
+import java.awt.datatransfer.StringSelection;
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.ObjectInputStream;
@@ -45,16 +46,16 @@ class UserListener extends Observable implements Runnable {
                 socket.receive(packet);
                 byte[] data = packet.getData();
 
-                ByteArrayInputStream in = new ByteArrayInputStream(data);
-                ObjectInputStream is = new ObjectInputStream(in);
-                BroadcastMessage message = (BroadcastMessage) is.readObject();
-
+                BroadcastMessage message = BroadcastMessage.fromString(new String(data));
+                
                 notifyObservers(new ReceivedBroadcastMessage(message, packet.getAddress()));
-
+                
             } catch (SocketTimeoutException ignored) {
             } catch (IOException | ClassNotFoundException e) {
                 e.printStackTrace();
-            }
+            } catch (Exception e) {
+				e.printStackTrace();
+			}
         }
     }
 

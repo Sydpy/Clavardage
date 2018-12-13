@@ -27,7 +27,7 @@ class SessionListener extends Observable implements Runnable {
 				Socket client = ssocket.accept();
 				BufferedReader in = new BufferedReader(new InputStreamReader(client.getInputStream()));
 				String content = in.readLine();
-				Message msg = new Message(content,UserManager.getInstance().getUserByIp(client.getLocalAddress()),UserManager.getInstance().getUserByIp(client.getInetAddress()));
+				Message msg = new Message(content,UserManager.getInstance().getMyUser(),UserManager.getInstance().getUserByIp(client.getInetAddress()));
 				notifyObservers(msg);
 			} catch (IOException e) {
 				e.printStackTrace();

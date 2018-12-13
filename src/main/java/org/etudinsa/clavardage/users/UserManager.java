@@ -69,8 +69,8 @@ public class UserManager extends Observable implements Observer {
         return myUser;
     }
 
-    synchronized public Object[] getUserDB() {
-        return userDB.toArray();
+    synchronized public User[] getUserDB() {
+        return userDB.toArray(new User[userDB.size()]);
     }
 
     /**
@@ -111,12 +111,7 @@ public class UserManager extends Observable implements Observer {
         DatagramSocket socket = new DatagramSocket();
         socket.setBroadcast(true);
 
-        // Serialize the BroadcastMessage
-        ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
-        ObjectOutputStream os = new ObjectOutputStream(outputStream);
-        os.writeObject(mes);
-
-        byte[] data = outputStream.toByteArray();
+        byte[] data = mes.toString().getBytes();
 
         assert data.length <= 1024;
 
@@ -133,7 +128,7 @@ public class UserManager extends Observable implements Observer {
 
         assert myUser != null;
 
-        sendBroadcast(new BroadcastMessage(BroadcastMessage.Type.NEWUSER, myUser));
+        sendBroadcast(new BroadcastMessage(BroadcastMessage.Type.NEWUSER, myUser.pseudo));
     }
 
     private void retrieveUserDB() throws IOException {
@@ -222,7 +217,7 @@ public class UserManager extends Observable implements Observer {
                 case NEWUSER:
                     System.out.println("Received 'new user' notification.");
                     synchronized (userDB) {
-                        userDB.add(new User(bm.user.pseudo, addr));
+                        userDB.add(new User(bm.pseudo, addr));
                     }
                     break;
                 case USERLEAVING:
