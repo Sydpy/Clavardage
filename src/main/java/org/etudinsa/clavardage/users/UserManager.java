@@ -85,7 +85,7 @@ public class UserManager extends Observable implements Observer {
         // is none already created
         assert myPseudo == null;
 
-        // Retrieve de userDB from the current UserDBAuthority of the network
+        // Retrieve userDB from the current UserDBAuthority of the network
         retrieveUserDB();
         
         this.myPseudo = pseudo;
@@ -99,7 +99,10 @@ public class UserManager extends Observable implements Observer {
      * @return is the application responsible of delivering the user database
      */
     synchronized private boolean isUserDBAuthority() {
-        return userDB.indexOf(getMyUser()) == userDB.size() - 1;
+    	
+    	int index = userDB.indexOf(getMyUser());
+    	
+        return index != -1 && index == userDB.size() - 1;
     }
 
     private void sendBroadcast(BroadcastMessage mes) throws IOException {
@@ -126,16 +129,17 @@ public class UserManager extends Observable implements Observer {
     }
 
     private void retrieveUserDB() throws IOException {
+    	
+        userDB = new ArrayList<>();
+        
         // Ask all the network in hope that the UserDBAuthority answers
         sendBroadcast(new BroadcastMessage(BroadcastMessage.Type.USERDB_REQUEST));
-
-        userDB = new ArrayList<>();
 
         try {
             // We configure a timeout on the sockets to handle the case where we are alone
             ServerSocket serverSocket = new ServerSocket(USERDB_RETRIEVE_PORT);
             serverSocket.setSoTimeout(5000);
-
+            
             Socket socket = serverSocket.accept();
             socket.setSoTimeout(5000);
 
@@ -177,15 +181,16 @@ public class UserManager extends Observable implements Observer {
 
     private void sendUserDB(InetAddress ip) throws IOException {
         Socket socket = new Socket(ip, USERDB_RETRIEVE_PORT);
-        OutputStream outputStream = socket.getOutputStream();
-        ObjectOutputStream objectOutputStream = new ObjectOutputStream(outputStream);
+        ObjectOutputStream objectOutputStream = new ObjectOutputStream(socket.getOutputStream());
 
         synchronized (userDB) {
             for (User user : userDB) {
                 objectOutputStream.writeObject(user);
+                objectOutputStream.flush();
             }
         }
-
+        
+        objectOutputStream.close();
         socket.close();
     }
 
@@ -201,9 +206,10 @@ public class UserManager extends Observable implements Observer {
                 case USERDB_REQUEST:
                     System.out.println("Received UserDB request.");
                     if (isUserDBAuthority()) {
-                    	System.out.println("Sending UsedDB.");
+                    	System.out.println("Sending UserDB.");
                         try {
                             sendUserDB(addr);
+                        	System.out.println("Done sending.");
                         } catch (IOException e) {
                             e.printStackTrace();
                         }
