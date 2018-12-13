@@ -7,12 +7,12 @@ import java.util.Observable;
 
 class UserListener extends Observable implements Runnable {
 
-    static class ReceivedBroadcastMessage {
+    static class ReceivedUserMessage {
 
         final UserMessage userMessage;
         final InetAddress address;
 
-        ReceivedBroadcastMessage(UserMessage userMessage, InetAddress address) {
+        ReceivedUserMessage(UserMessage userMessage, InetAddress address) {
             this.userMessage = userMessage;
             this.address = address;
         }
@@ -46,14 +46,12 @@ class UserListener extends Observable implements Runnable {
                 UserMessage message = UserMessage.fromString(new String(data));
                 
                 setChanged();
-                notifyObservers(new ReceivedBroadcastMessage(message, packet.getAddress()));
+                notifyObservers(new ReceivedUserMessage(message, packet.getAddress()));
                                 
             } catch (SocketTimeoutException ignored) {
-            } catch (IOException | ClassNotFoundException e) {
-                e.printStackTrace();
             } catch (Exception e) {
-				e.printStackTrace();
-			}
+                e.printStackTrace();
+            }
         }
     }
 

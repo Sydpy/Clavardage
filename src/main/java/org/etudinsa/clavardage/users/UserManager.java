@@ -23,7 +23,7 @@ public class UserManager extends Observable implements Observer {
 
     private UserManager() {}
 
-    public void joinNetwork(NetworkInterface networkInterface, String pseudo) throws Exception {
+    public void joinNetwork(String pseudo) throws Exception {
 
         if (connected) throw new Exception("Already connected");
 
@@ -33,8 +33,7 @@ public class UserManager extends Observable implements Observer {
         if (userByPseudo != null)
             throw new Exception("Pseudo already taken.");
 
-        InetAddress ip = networkInterface.getInetAddresses().nextElement();
-        myUser = new User(pseudo, ip);
+        myUser = new User(pseudo, InetAddress.getLoopbackAddress());
         userDB.add(myUser);
 
         sendBroadcast(pseudo.getBytes());
@@ -180,6 +179,10 @@ public class UserManager extends Observable implements Observer {
 
         synchronized (userDB) {
             for (User user : userDB) {
+
+                if (user.equals(myUser))
+                    user = new User(myUser.pseudo, socket.getInetAddress());
+
                 objectOutputStream.writeObject(user);
                 objectOutputStream.flush();
             }
@@ -192,10 +195,10 @@ public class UserManager extends Observable implements Observer {
     @Override
     public void update(Observable observable, Object o) {
 
-        if (o instanceof UserListener.ReceivedBroadcastMessage) {
+        if (o instanceof UserListener.ReceivedUserMessage) {
 
-            InetAddress addr = ((UserListener.ReceivedBroadcastMessage) o).address;
-            UserMessage bm = ((UserListener.ReceivedBroadcastMessage) o).userMessage;
+            InetAddress addr = ((UserListener.ReceivedUserMessage) o).address;
+            UserMessage bm = ((UserListener.ReceivedUserMessage) o).userMessage;
 
             switch (bm.type) {
                 case USERDB_REQUEST:

@@ -7,6 +7,7 @@ import org.etudinsa.clavardage.users.User;
 import org.etudinsa.clavardage.users.UserManager;
 
 import java.io.IOException;
+import java.net.InetAddress;
 import java.net.NetworkInterface;
 import java.net.SocketException;
 import java.util.Observable;
@@ -38,15 +39,12 @@ public class CLI extends UI implements Runnable {
     private CLIMode mode = CLIMode.HOME;
     private String distantUser = null;
 
-    private NetworkInterface netInterface;
-
     private UserManager userManager = UserManager.getInstance();
     private SessionManager sessionManager = SessionManager.getInstance();
 
-    private CLI(NetworkInterface in) {
+    private CLI() {
         userManager.addObserver(this);
         sessionManager.addObserver(this);
-        netInterface = in;
     }
 
     @Override
@@ -171,14 +169,14 @@ public class CLI extends UI implements Runnable {
         }
     }
 
-    private void connect(NetworkInterface in) {
+    private void connect() {
 
         Scanner sc = new Scanner(System.in);
 
         while (!userManager.isConnected()) {
             System.out.print("Choose a pseudo : ");
             try {
-                userManager.joinNetwork(in, sc.nextLine());
+                userManager.joinNetwork(sc.nextLine());
             } catch (Exception e) {
                 System.out.println(e.toString());
             }
@@ -201,9 +199,7 @@ public class CLI extends UI implements Runnable {
 
         Scanner sc = new Scanner(System.in);
 
-        connect(netInterface);
-
-        sessionManager.start();
+        connect();
 
         System.out.println("Starting ClavardageCLI.");
         printHomeHelp();
@@ -226,14 +222,7 @@ public class CLI extends UI implements Runnable {
 
     public static void main(String[] args) throws SocketException {
 
-        if (args.length != 1) {
-            System.err.println("args : <interface to the LAN>");
-            System.exit(1);
-        }
-
-        NetworkInterface in = NetworkInterface.getByName(args[0]);
-
-        new CLI(in).run();
+        new CLI().run();
     }
 
 }
