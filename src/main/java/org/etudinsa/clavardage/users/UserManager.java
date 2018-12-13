@@ -93,9 +93,6 @@ public class UserManager extends Observable implements Observer {
 
         // Advertise the fact that we are now a user of the network
         advertiseMyself();
-
-        // Add myUser at the end of the userDB
-        userDB.add(myUser);
     }
 
     /**
@@ -197,12 +194,14 @@ public class UserManager extends Observable implements Observer {
 
     @Override
     public void update(Observable observable, Object o) {
-
+    	
         if (o instanceof UserListener.ReceivedBroadcastMessage) {
 
             InetAddress addr = ((UserListener.ReceivedBroadcastMessage) o).address;
             BroadcastMessage bm = ((UserListener.ReceivedBroadcastMessage) o).broadcastMessage;
 
+            System.out.println("UserManager : " + bm.toString());
+            
             switch (bm.type) {
                 case USERDB_REQUEST:
                     System.out.println("Received UserDB request.");

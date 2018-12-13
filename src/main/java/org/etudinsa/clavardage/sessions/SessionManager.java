@@ -84,6 +84,8 @@ public class SessionManager extends Observable implements Observer{
 		out.println(message.getContent());
 		session.addMessage(message);
 		socket.close();
+		
+		setChanged();
 		notifyObservers(session);
 	}
 
@@ -108,6 +110,8 @@ public class SessionManager extends Observable implements Observer{
 				session = openSession(message.getSender().pseudo);
 			}
 			session.addMessage(message);
+			
+			setChanged();
 			notifyObservers(session);
 		} catch (Exception e) {
 			e.printStackTrace();

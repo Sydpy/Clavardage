@@ -48,8 +48,9 @@ class UserListener extends Observable implements Runnable {
 
                 BroadcastMessage message = BroadcastMessage.fromString(new String(data));
                 
+                setChanged();
                 notifyObservers(new ReceivedBroadcastMessage(message, packet.getAddress()));
-                
+                                
             } catch (SocketTimeoutException ignored) {
             } catch (IOException | ClassNotFoundException e) {
                 e.printStackTrace();
