@@ -69,6 +69,10 @@ public class UserManager extends Observable implements Observer {
         return myUser;
     }
 
+    synchronized public Object[] getUserDB() {
+        return userDB.toArray();
+    }
+
     /**
      * @param pseudo pseudo to give to the application's User
      * @throws IOException if the retrieval of the User DB or the advertising of the application

@@ -1,10 +1,11 @@
 package org.etudinsa.clavardage.users;
 
+import java.io.Serializable;
 import java.net.InetAddress;
 import java.util.Date;
 import java.util.Objects;
 
-public class User {
+public class User implements Serializable {
 
     public final String pseudo;
     public final InetAddress ip;

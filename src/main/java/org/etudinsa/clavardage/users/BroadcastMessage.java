@@ -1,8 +1,9 @@
 package org.etudinsa.clavardage.users;
 
+import java.io.Serializable;
 import java.net.InetAddress;
 
-class BroadcastMessage {
+class BroadcastMessage implements Serializable {
 
     enum Type { USERDB_REQUEST, NEWUSER, USERLEAVING }
 
