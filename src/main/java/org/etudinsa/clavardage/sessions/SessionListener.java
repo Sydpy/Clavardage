@@ -5,8 +5,9 @@ import java.io.IOException;
 import java.io.InputStreamReader;
 import java.net.ServerSocket;
 import java.net.Socket;
-import java.net.SocketException;
 import java.util.Observable;
+
+import org.etudinsa.clavardage.users.UserManager;
 
 class SessionListener extends Observable implements Runnable {
 
@@ -16,20 +17,18 @@ class SessionListener extends Observable implements Runnable {
 
 	SessionListener() throws IOException {
 		this.ssocket = new ServerSocket(LISTENING_PORT);
-		ssocket.setSoTimeout(5000);
 	}
 	
 	public void run() {
 
-		while(true) {
-
-			if (ssocket.isClosed()) return;
+		while(!ssocket.isClosed()) {
 
 			try {
 				Socket client = ssocket.accept();
 				BufferedReader in = new BufferedReader(new InputStreamReader(client.getInputStream()));
-				String msg = in.readLine();
-
+				String content = in.readLine();
+				Message msg = new Message(content,UserManager.getInstance().getUserByIp(client.getLocalAddress()),UserManager.getInstance().getUserByIp(client.getInetAddress()));
+				notifyObservers(msg);
 			} catch (IOException e) {
 				e.printStackTrace();
 			}
