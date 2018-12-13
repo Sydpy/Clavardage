@@ -84,7 +84,7 @@ public class SessionManager extends Observable implements Observer{
 		out.println(message.getContent());
 		session.addMessage(message);
 		socket.close();
-		notifyObservers(message);
+		notifyObservers(session);
 	}
 
 	public Session getSessionByDistantUserPseudo(String pseudo) throws Exception {
@@ -108,8 +108,8 @@ public class SessionManager extends Observable implements Observer{
 				session = openSession(message.getSender().pseudo);
 			}
 			session.addMessage(message);
+			notifyObservers(session);
 		} catch (Exception e) {
-			System.out.println("Session needed to receive the message");
 			e.printStackTrace();
 		}
 	}
