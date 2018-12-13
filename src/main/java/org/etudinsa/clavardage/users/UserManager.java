@@ -35,8 +35,9 @@ public class UserManager extends Observable implements Observer {
 
         myUser = new User(pseudo, InetAddress.getLoopbackAddress());
         userDB.add(myUser);
-
-        sendBroadcast(pseudo.getBytes());
+        
+        UserMessage userMsg = new UserMessage(UserMessage.Type.NEWUSER,pseudo);
+        sendBroadcast(userMsg.toString().getBytes());
 
         startListener();
 
@@ -158,8 +159,10 @@ public class UserManager extends Observable implements Observer {
                     User user;
                     if ((user = (User) objectInputStream.readObject()) == null) break;
 
+                    System.out.println("message received from user: " + user);
                     userDB.add(user);
                 } catch (EOFException ef) {
+                	System.out.println("eof exception");
                 	break;
                 } catch (ClassNotFoundException e) {
                     e.printStackTrace();
@@ -186,6 +189,7 @@ public class UserManager extends Observable implements Observer {
 
                 objectOutputStream.writeObject(user);
                 objectOutputStream.flush();
+                System.out.println("user sent db: " + user);
             }
         }
 
