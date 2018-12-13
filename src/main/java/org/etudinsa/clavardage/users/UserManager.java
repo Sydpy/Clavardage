@@ -16,7 +16,7 @@ public class UserManager extends Observable implements Observer {
 
 
     private List<User> userDB;
-    private User myUser;
+    private String myPseudo;
 
     private UserListener userListener;
 
@@ -66,7 +66,7 @@ public class UserManager extends Observable implements Observer {
      * @return the User instance associated with this application
      */
     synchronized public User getMyUser() {
-        return myUser;
+        return getUserByPseudo(myPseudo);
     }
 
     synchronized public User[] getUserDB() {
@@ -83,23 +83,23 @@ public class UserManager extends Observable implements Observer {
 
         // We can create a user for the current application only if there
         // is none already created
-        assert myUser == null;
+        assert myPseudo == null;
 
         // Retrieve de userDB from the current UserDBAuthority of the network
         retrieveUserDB();
+        
+        this.myPseudo = pseudo;
 
-        //TODO : check if pseudo is in userDB
-        myUser = new User(pseudo, InetAddress.getLoopbackAddress());
-
+        
         // Advertise the fact that we are now a user of the network
-        advertiseMyself();
+        advertiseNewUser(pseudo);        
     }
 
     /**
      * @return is the application responsible of delivering the user database
      */
     synchronized private boolean isUserDBAuthority() {
-        return userDB.indexOf(myUser) == userDB.size() - 1;
+        return userDB.indexOf(getMyUser()) == userDB.size() - 1;
     }
 
     private void sendBroadcast(BroadcastMessage mes) throws IOException {
@@ -121,11 +121,8 @@ public class UserManager extends Observable implements Observer {
         socket.close();
     }
 
-    private void advertiseMyself() throws IOException {
-
-        assert myUser != null;
-
-        sendBroadcast(new BroadcastMessage(BroadcastMessage.Type.NEWUSER, myUser.pseudo));
+    private void advertiseNewUser(String pseudo) throws IOException {
+        sendBroadcast(new BroadcastMessage(BroadcastMessage.Type.NEWUSER, pseudo));
     }
 
     private void retrieveUserDB() throws IOException {
@@ -204,6 +201,7 @@ public class UserManager extends Observable implements Observer {
                 case USERDB_REQUEST:
                     System.out.println("Received UserDB request.");
                     if (isUserDBAuthority()) {
+                    	System.out.println("Sending UsedDB.");
                         try {
                             sendUserDB(addr);
                         } catch (IOException e) {
