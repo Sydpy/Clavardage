@@ -131,7 +131,7 @@ public class CLI extends UI implements Runnable {
             Session session = sessionManager.getSessionByDistantUserPseudo(distantUser);
 
             if (session == null) {
-                System.out.println("No session yet, start chating");
+                System.out.println("No session yet, start chatting");
             } else {
 
                 for (Message message : session.getMessages()) {

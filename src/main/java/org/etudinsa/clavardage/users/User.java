@@ -1,8 +1,12 @@
 package org.etudinsa.clavardage.users;
 
+import java.io.ByteArrayOutputStream;
+import java.io.IOException;
+import java.io.ObjectOutputStream;
 import java.io.Serializable;
 import java.net.InetAddress;
 import java.security.*;
+import java.util.Base64;
 import java.util.Objects;
 
 public class User implements Serializable {
@@ -17,12 +21,26 @@ public class User implements Serializable {
         this.publicKey = publicKey;
     }
 
-    public boolean verifySig(byte[] data, byte[] sig)
-            throws NoSuchAlgorithmException, InvalidKeyException, SignatureException {
+    protected byte[] toByteArray(Object o) throws IOException {
+        ByteArrayOutputStream bos = new ByteArrayOutputStream();
+        ObjectOutputStream out = new ObjectOutputStream(bos);
+
+        out.writeObject(o);
+        out.flush();
+
+        return bos.toByteArray();
+    }
+
+    public boolean verifySig(Object object, String sig)
+            throws NoSuchAlgorithmException, InvalidKeyException, SignatureException, IOException {
+
+        byte[] data = toByteArray(object);
+
         Signature signer = Signature.getInstance("SHA1withRSA");
         signer.initVerify(publicKey);
         signer.update(data);
-        return (signer.verify(sig));
+
+        return signer.verify(Base64.getMimeDecoder().decode(sig));
     }
     
     @Override

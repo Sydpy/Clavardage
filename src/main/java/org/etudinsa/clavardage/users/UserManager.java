@@ -4,9 +4,7 @@ import sun.security.rsa.RSAPublicKeyImpl;
 
 import java.io.*;
 import java.net.*;
-import java.security.InvalidKeyException;
-import java.security.KeyPair;
-import java.security.PublicKey;
+import java.security.*;
 import java.util.*;
 
 public class UserManager extends Observable implements Observer {
@@ -53,9 +51,15 @@ public class UserManager extends Observable implements Observer {
 
     public void leaveNetwork() throws Exception {
 
-        if (!connected) throw new Exception("Already connected");
-        //TODO : Broadcast USERLEAVING
+        if (!connected) throw new Exception("Already disconnected");
+
+        // Stop the listener
         stopListener();
+
+        // Sign the leaving request before sending it
+        String sig = myUser.signObject(UserMessage.Type.USERLEAVING);
+        UserMessage userMessage = new UserMessage(UserMessage.Type.USERLEAVING, sig);
+        sendBroadcast(userMessage.toString().getBytes());
 
         connected = false;
     }
@@ -244,9 +248,25 @@ public class UserManager extends Observable implements Observer {
 
                     break;
                 case USERLEAVING:
-                    synchronized (userDB) {
-                        setChanged();
-                        userDB.remove(getUserByIp(addr));
+
+                    User userLeaving = getUserByIp(addr);
+                    if (userLeaving == null)
+                        break;
+
+                    if (um.content.length != 1)
+                        break;
+
+                    try {
+                        if (!userLeaving.verifySig(UserMessage.Type.USERLEAVING, um.content[0]))
+                            break;
+
+                        synchronized (userDB) {
+                            setChanged();
+                            userDB.remove(getUserByIp(addr));
+                        }
+
+                    } catch (Exception e) {
+                        e.printStackTrace();
                     }
                     break;
             }
