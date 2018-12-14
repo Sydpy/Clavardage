@@ -5,24 +5,24 @@ import java.util.Date;
 import org.etudinsa.clavardage.users.User;
 
 public class Message {
-	private String content;
-	private Date date;
+	private MessageContent content;
 	private User sender;
 	private User recipient;
 	
 	public Message(String content, User destUser, User srcUser) {
-		this.content = content;
+		this.content = new MessageContent(content);
 		this.recipient = destUser;
 		this.sender = srcUser;
-		this.date = new Date();
+	}
+	
+	public Message(String content, User destUser, User srcUser, Date date) {
+		this.content = new MessageContent(content, date);
+		this.recipient = destUser;
+		this.sender = srcUser;
 	}
 
-	public String getContent() {
+	public MessageContent getContent() {
 		return content;
-	}
-
-	public Date getDate() {
-		return date;
 	}
 
 	public User getSender() {

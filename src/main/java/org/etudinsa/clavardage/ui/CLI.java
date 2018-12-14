@@ -82,10 +82,10 @@ public class CLI extends UI implements Runnable {
             System.out.println();
 
             if (sender.pseudo.equals(distantUser)) {
-                System.out.println("RECV : " + lastMessage.getContent());
+                System.out.println(lastMessage.getContent().getDate() + " RECV : " + lastMessage.getContent().getContent());
                 printPrompt();
             } else if (sender.pseudo.equals(userManager.getMyUser().pseudo)) {
-                System.out.println("SENT : " + lastMessage.getContent());
+                System.out.println(lastMessage.getContent().getDate() + " SENT : " + lastMessage.getContent().getContent());
             } else {
                 System.out.println("SessionManager : New message from " + sender.pseudo);
                 printPrompt();
@@ -137,9 +137,9 @@ public class CLI extends UI implements Runnable {
                 for (Message message : session.getMessages()) {
                     User sender = message.getSender();
                     if (sender.equals(userManager.getMyUser())) {
-                        System.out.println("SENT : " + message.getContent());
+                        System.out.println(message.getContent().getDate() + " SENT : " + message.getContent().getContent());
                     } else {
-                        System.out.println("RECV : " + message.getContent());
+                        System.out.println(message.getContent().getDate() + " RECV : " + message.getContent().getContent());
                     }
                 }
             }

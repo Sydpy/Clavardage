@@ -1,6 +1,7 @@
 package org.etudinsa.clavardage.sessions;
 
 import java.io.IOException;
+import java.io.ObjectOutputStream;
 import java.io.PrintWriter;
 import java.net.Socket;
 import java.util.ArrayList;
@@ -20,7 +21,7 @@ public class SessionManager extends Observable implements Observer{
     }
     
 	private List<Session> sessions = new ArrayList<>();
-	private PrintWriter out = null;
+	private ObjectOutputStream objectOutputStream = null;
 
 	private SessionListener sessionListener;
 
@@ -74,15 +75,18 @@ public class SessionManager extends Observable implements Observer{
 		if (receiver == null) {
 			throw new Exception("No user with this pseudo!!");
 		}
-		Message message = new Message(content, receiver, myUser);
 		Session session = getSessionByDistantUserPseudo(pseudo);
 		if (session == null) {
 			session = openSession(pseudo);
 		}
 		Socket socket = new Socket(receiver.ip,SessionListener.LISTENING_PORT);
-		out = new PrintWriter(socket.getOutputStream(),true);
-		out.println(message.getContent());
+		Message message = new Message(content, receiver, myUser);
+		objectOutputStream = new ObjectOutputStream(socket.getOutputStream());
+        objectOutputStream.writeObject(message.getContent());
+        objectOutputStream.flush();
+        
 		session.addMessage(message);
+		objectOutputStream.close();
 		socket.close();
 		
 		setChanged();
