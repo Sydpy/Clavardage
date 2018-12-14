@@ -43,6 +43,9 @@ public class SessionManager extends Observable implements Observer{
 	}
 	public void stop() {
 	   sessionListener.stop();
+	   for (int i = 0; i < sessions.size(); i++) {
+		   sessions.get(i).close();
+		   }
 	}
 
 	public Session openSession(String pseudo) throws IOException {
