@@ -10,7 +10,7 @@ import java.util.Observable;
 
 import org.etudinsa.clavardage.users.UserManager;
 
-class SessionListener extends Observable implements Runnable {
+class SessionListener implements Runnable {
 
 	final static int LISTENING_PORT = 1707;
 	
@@ -29,13 +29,15 @@ class SessionListener extends Observable implements Runnable {
 	            InputStream is = client.getInputStream();
 	            ObjectInputStream objectInputStream = new ObjectInputStream(is);
 	            try {
-					MessageContent msgContent = (MessageContent) objectInputStream.readObject();
-					Message msg = new Message(msgContent.getContent(),UserManager.getInstance().getMyUser(),UserManager.getInstance().getUserByIp(client.getInetAddress()),msgContent.getDate());
-					setChanged();
-					notifyObservers(msg);
+					SignedMessageContent sigMsgContent = (SignedMessageContent) objectInputStream.readObject();
+
+					SessionManager.getInstance().receivedMessageFrom(sigMsgContent, client.getInetAddress());
+
 				} catch (EOFException ef) {
                     System.out.println("EOFException in SessionListener");
 				} catch (ClassNotFoundException e) {
+					e.printStackTrace();
+				} catch (Exception e) {
 					e.printStackTrace();
 				}
 			} catch (IOException e) {
