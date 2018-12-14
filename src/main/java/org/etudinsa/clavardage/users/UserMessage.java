@@ -7,45 +7,35 @@ public class UserMessage implements Serializable {
     public enum Type { USERDB_REQUEST, NEWUSER, USERLEAVING }
 
     public final Type type;
-    public final String pseudo;
+    public final String[] content;
 
-    UserMessage(Type type) {
+    UserMessage(Type type, String... content) {
         this.type = type;
-        this.pseudo = "";
+        this.content = content;
     }
 
-    UserMessage(Type type, String pseudo) {
-        this.type = type;
-        this.pseudo = pseudo;
-    }
-    
-    public static UserMessage fromString(String str) throws Exception {
-    	
+    static UserMessage fromString(String str) throws Exception {
+
     	String[] splitted = str.split(":", 2);
     	
     	Type type = Type.valueOf(splitted[0].trim());
-    	
-    	if (type == Type.NEWUSER) {
-    		if (splitted.length != 2)
-    			throw new Exception("Invalid string");
-    		
-    		String pseudo = splitted[1].trim();
-    		
-    		return new UserMessage(type, pseudo);
-    	}
-    	
-    	return new UserMessage(type);
+
+    	if (splitted.length == 1) {
+    	    return new UserMessage(type);
+        }
+
+    	return new UserMessage(type, splitted[1].split(":"));
     }
     
     @Override
     public String toString() {
 		StringBuilder sb = new StringBuilder(type.toString());
-		
-		if (!pseudo.equals("")) {
-			sb.append(":");
-			sb.append(pseudo);
-		}
-		
+
+        for (String s : content) {
+            sb.append(":");
+            sb.append(s.trim());
+        }
+
 		return sb.toString();
     }
 }

@@ -1,7 +1,10 @@
 package org.etudinsa.clavardage.users;
 
+import sun.security.rsa.RSAPublicKeyImpl;
+
 import java.io.*;
 import java.net.*;
+import java.security.*;
 import java.util.*;
 
 public class UserManager extends Observable implements Observer {
@@ -16,14 +19,14 @@ public class UserManager extends Observable implements Observer {
 
 
     private List<User> userDB = new ArrayList<>();
-    private User myUser;
+    private MyUser myUser;
     private UserListener userListener;
 
     private boolean connected = false;
 
     private UserManager() {}
 
-    public void joinNetwork(String pseudo) throws Exception {
+    public void joinNetwork(String pseudo, KeyPair keyPair) throws Exception {
 
         if (connected) throw new Exception("Already connected");
 
@@ -33,10 +36,12 @@ public class UserManager extends Observable implements Observer {
         if (userByPseudo != null)
             throw new Exception("Pseudo already taken.");
 
-        myUser = new User(pseudo, InetAddress.getLoopbackAddress());
+        myUser = new MyUser(pseudo, InetAddress.getLoopbackAddress(), keyPair);
         userDB.add(myUser);
 
-        UserMessage userMsg = new UserMessage(UserMessage.Type.NEWUSER,pseudo);
+        String pubKeyB64 = Base64.getMimeEncoder().encodeToString(myUser.publicKey.getEncoded());
+
+        UserMessage userMsg = new UserMessage(UserMessage.Type.NEWUSER, pseudo, pubKeyB64);
         sendBroadcast(userMsg.toString().getBytes());
 
         startListener();
@@ -46,9 +51,15 @@ public class UserManager extends Observable implements Observer {
 
     public void leaveNetwork() throws Exception {
 
-        if (!connected) throw new Exception("Already connected");
-        //TODO : Broadcast USERLEAVING
+        if (!connected) throw new Exception("Already disconnected");
+
+        // Stop the listener
         stopListener();
+
+        // Sign the leaving request before sending it
+        String sig = myUser.signObject(UserMessage.Type.USERLEAVING);
+        UserMessage userMessage = new UserMessage(UserMessage.Type.USERLEAVING, sig);
+        sendBroadcast(userMessage.toString().getBytes());
 
         connected = false;
     }
@@ -77,7 +88,7 @@ public class UserManager extends Observable implements Observer {
     /**
      * @return the User instance associated with this application
      */
-    synchronized public User getMyUser() {
+    synchronized public MyUser getMyUser() {
         return myUser;
     }
 
@@ -139,14 +150,17 @@ public class UserManager extends Observable implements Observer {
 
         ArrayList<User> userDB = new ArrayList<>();
 
-        // Ask all the network in hope that the UserDBAuthority answers
-        UserMessage dbReq = new UserMessage(UserMessage.Type.USERDB_REQUEST);
-        sendBroadcast(dbReq.toString().getBytes());
-
         try {
+            // We first open the TCP socket on which we are going to retrieve the UserDB from de UserDBAuthority
+            // We do it before broadcasting the UserDB Request to be sure that it is open when it will reply
+
             // We configure a timeout on the sockets to handle the case where we are alone
             ServerSocket serverSocket = new ServerSocket(USERDB_RETRIEVE_PORT);
             serverSocket.setSoTimeout(2000);
+
+            // Ask all the network in hope that the UserDBAuthority answers
+            UserMessage dbReq = new UserMessage(UserMessage.Type.USERDB_REQUEST);
+            sendBroadcast(dbReq.toString().getBytes());
 
             Socket socket = serverSocket.accept();
             socket.setSoTimeout(2000);
@@ -184,7 +198,7 @@ public class UserManager extends Observable implements Observer {
             for (User user : userDB) {
 
                 if (user.equals(myUser))
-                    user = new User(myUser.pseudo, socket.getLocalAddress());
+                    user = new User(myUser.pseudo, socket.getLocalAddress(), myUser.publicKey);
 
                 objectOutputStream.writeObject(user);
                 objectOutputStream.flush();
@@ -207,6 +221,7 @@ public class UserManager extends Observable implements Observer {
                 case USERDB_REQUEST:
                     if (isUserDBAuthority()) {
                         try {
+                            setChanged();
                             sendUserDB(addr);
                         } catch (IOException e) {
                             e.printStackTrace();
@@ -214,18 +229,48 @@ public class UserManager extends Observable implements Observer {
                     }
                     break;
                 case NEWUSER:
-                    synchronized (userDB) {
-                        userDB.add(new User(um.pseudo, addr));
+
+                    if (um.content.length != 2) break;
+
+                    try {
+
+                        String pseudo = um.content[0];
+                        PublicKey publicKey = new RSAPublicKeyImpl(Base64.getMimeDecoder().decode(um.content[1]));
+
+                        synchronized (userDB) {
+                            setChanged();
+                            userDB.add(new User(pseudo, addr, publicKey));
+                        }
+
+                    } catch (InvalidKeyException e) {
+                        e.printStackTrace();
                     }
+
                     break;
                 case USERLEAVING:
-                    synchronized (userDB) {
-                        userDB.remove(getUserByIp(addr));
+
+                    User userLeaving = getUserByIp(addr);
+                    if (userLeaving == null)
+                        break;
+
+                    if (um.content.length != 1)
+                        break;
+
+                    try {
+                        if (!userLeaving.verifySig(UserMessage.Type.USERLEAVING, um.content[0]))
+                            break;
+
+                        synchronized (userDB) {
+                            setChanged();
+                            userDB.remove(getUserByIp(addr));
+                        }
+
+                    } catch (Exception e) {
+                        e.printStackTrace();
                     }
                     break;
             }
 
-            setChanged();
             notifyObservers(um);
         }
     }

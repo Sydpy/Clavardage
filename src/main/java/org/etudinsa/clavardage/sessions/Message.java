@@ -9,8 +9,8 @@ public class Message {
 	private User sender;
 	private User recipient;
 	
-	public Message(String content, User destUser, User srcUser) {
-		this.content = new MessageContent(content);
+	public Message(MessageContent content, User destUser, User srcUser) {
+		this.content = content;
 		this.recipient = destUser;
 		this.sender = srcUser;
 	}

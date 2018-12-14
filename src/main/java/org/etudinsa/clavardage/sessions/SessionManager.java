@@ -2,17 +2,20 @@ package org.etudinsa.clavardage.sessions;
 
 import java.io.IOException;
 import java.io.ObjectOutputStream;
-import java.io.PrintWriter;
+import java.net.InetAddress;
 import java.net.Socket;
+import java.security.InvalidKeyException;
+import java.security.NoSuchAlgorithmException;
+import java.security.SignatureException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Observable;
-import java.util.Observer;
 
+import org.etudinsa.clavardage.users.MyUser;
 import org.etudinsa.clavardage.users.UserManager;
 import org.etudinsa.clavardage.users.User;
 
-public class SessionManager extends Observable implements Observer{
+public class SessionManager extends Observable {
 	
     private static SessionManager instance = new SessionManager();
 
@@ -30,8 +33,6 @@ public class SessionManager extends Observable implements Observer{
 	public void start() {
 		try {
 			sessionListener = new SessionListener();
-
-			sessionListener.addObserver(this);
 
 			Thread sessionListenerThread = new Thread(sessionListener);
 			sessionListenerThread.start();
@@ -71,7 +72,7 @@ public class SessionManager extends Observable implements Observer{
 	//We notify the UI with the message sent
 	public void sendMessage(String content, String pseudo) throws Exception {
 		User receiver = UserManager.getInstance().getUserByPseudo(pseudo);
-		User myUser = UserManager.getInstance().getMyUser();
+		MyUser myUser = UserManager.getInstance().getMyUser();
 		if (myUser == null) {
 			throw new Exception("You need to create a user!!");
 		}
@@ -82,12 +83,18 @@ public class SessionManager extends Observable implements Observer{
 		if (session == null) {
 			session = openSession(pseudo);
 		}
+
+		MessageContent messageContent = new MessageContent(content);
+		String signature = myUser.signObject(messageContent);
+		SignedMessageContent sigMsgContent = new SignedMessageContent(messageContent, signature);
+
 		Socket socket = new Socket(receiver.ip,SessionListener.LISTENING_PORT);
-		Message message = new Message(content, receiver, myUser);
 		objectOutputStream = new ObjectOutputStream(socket.getOutputStream());
-        objectOutputStream.writeObject(message.getContent());
+        objectOutputStream.writeObject(sigMsgContent);
         objectOutputStream.flush();
-        
+
+		Message message = new Message(messageContent, receiver, myUser);
+
 		session.addMessage(message);
 		objectOutputStream.close();
 		socket.close();
@@ -109,25 +116,29 @@ public class SessionManager extends Observable implements Observer{
 		return null;
 	}
 
-	//When we receive a message, we add it to the session or create one if it doesn't already exist
-	private void receiveMessage(Message message) {
-		try {
-			Session session = getSessionByDistantUserPseudo(message.getSender().pseudo);
-			if (session == null) {
-				session = openSession(message.getSender().pseudo);
-			}
-			session.addMessage(message);
-			
-			setChanged();
-			notifyObservers(session);
-		} catch (Exception e) {
-			e.printStackTrace();
-		}
-	}
+	public void receivedMessageFrom(SignedMessageContent sigMsgContent, InetAddress addr)
+			throws Exception {
 
-	public void update(Observable o, Object arg) {
-		SessionListener sl = (SessionListener) o;
-		Message message = (Message) arg;
-		receiveMessage(message);
+		User sender = UserManager.getInstance().getUserByIp(addr);
+
+		// Verify valid user
+		if (sender == null) return;
+
+		// Verify user signature
+		if (!sender.verifySig(sigMsgContent.content, sigMsgContent.contentSignature))
+			return;
+
+		Session session = getSessionByDistantUserPseudo(sender.pseudo);
+		if (session == null) {
+			session = openSession(sender.pseudo);
+		}
+
+		User myUser = UserManager.getInstance().getMyUser();
+
+		Message message = new Message(sigMsgContent.content, myUser, sender);
+		session.addMessage(message);
+
+		setChanged();
+		notifyObservers(session);
 	}
 }
