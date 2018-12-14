@@ -2,15 +2,16 @@ package org.etudinsa.clavardage.users;
 
 import java.io.Serializable;
 
-class UserMessage implements Serializable {
+public class UserMessage implements Serializable {
 
-    enum Type { USERDB_REQUEST, NEWUSER, USERLEAVING }
+    public enum Type { USERDB_REQUEST, NEWUSER, USERLEAVING }
 
-    final Type type;
-    String pseudo;
+    public final Type type;
+    public final String pseudo;
 
     UserMessage(Type type) {
         this.type = type;
+        this.pseudo = "";
     }
 
     UserMessage(Type type, String pseudo) {
@@ -40,7 +41,7 @@ class UserMessage implements Serializable {
     public String toString() {
 		StringBuilder sb = new StringBuilder(type.toString());
 		
-		if (pseudo != null) {
+		if (!pseudo.equals("")) {
 			sb.append(":");
 			sb.append(pseudo);
 		}

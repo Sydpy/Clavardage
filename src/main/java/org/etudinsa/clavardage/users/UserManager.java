@@ -35,7 +35,7 @@ public class UserManager extends Observable implements Observer {
 
         myUser = new User(pseudo, InetAddress.getLoopbackAddress());
         userDB.add(myUser);
-        
+
         UserMessage userMsg = new UserMessage(UserMessage.Type.NEWUSER,pseudo);
         sendBroadcast(userMsg.toString().getBytes());
 
@@ -89,6 +89,22 @@ public class UserManager extends Observable implements Observer {
         return connected;
     }
 
+    /**
+     * @return is the application responsible of delivering the user database
+     */
+    synchronized public boolean isUserDBAuthority() {
+
+        if (!connected)
+            return false;
+
+        int myUserIndex = userDB.indexOf(myUser);
+        if (myUserIndex == -1) return false;
+
+        int userDBSize = userDB.size();
+        return myUserIndex == userDBSize - 1;
+    }
+
+
     private void startListener() throws SocketException {
         userListener = new UserListener();
 
@@ -100,21 +116,6 @@ public class UserManager extends Observable implements Observer {
 
     private void stopListener() {
         userListener.stop();
-    }
-
-    /**
-     * @return is the application responsible of delivering the user database
-     */
-    synchronized private boolean isUserDBAuthority() {
-
-        if (!connected)
-            return false;
-
-        int myUserIndex = userDB.indexOf(myUser);
-        if (myUserIndex == -1) return false;
-
-        int userDBSize = userDB.size();
-        return myUserIndex == userDBSize - 1;
     }
 
     private void sendBroadcast(byte[] data) throws IOException {
@@ -145,10 +146,10 @@ public class UserManager extends Observable implements Observer {
         try {
             // We configure a timeout on the sockets to handle the case where we are alone
             ServerSocket serverSocket = new ServerSocket(USERDB_RETRIEVE_PORT);
-            serverSocket.setSoTimeout(5000);
+            serverSocket.setSoTimeout(2000);
 
             Socket socket = serverSocket.accept();
-            socket.setSoTimeout(5000);
+            socket.setSoTimeout(2000);
 
             InputStream is = socket.getInputStream();
             ObjectInputStream objectInputStream = new ObjectInputStream(is);
@@ -159,11 +160,9 @@ public class UserManager extends Observable implements Observer {
                     User user;
                     if ((user = (User) objectInputStream.readObject()) == null) break;
 
-                    System.out.println("message received from user: " + user);
                     userDB.add(user);
                 } catch (EOFException ef) {
-                	System.out.println("eof exception");
-                	break;
+                    break;
                 } catch (ClassNotFoundException e) {
                     e.printStackTrace();
                 }
@@ -185,11 +184,10 @@ public class UserManager extends Observable implements Observer {
             for (User user : userDB) {
 
                 if (user.equals(myUser))
-                    user = new User(myUser.pseudo, socket.getInetAddress());
+                    user = new User(myUser.pseudo, socket.getLocalAddress());
 
                 objectOutputStream.writeObject(user);
                 objectOutputStream.flush();
-                System.out.println("user sent db: " + user);
             }
         }
 
@@ -203,34 +201,32 @@ public class UserManager extends Observable implements Observer {
         if (o instanceof UserListener.ReceivedUserMessage) {
 
             InetAddress addr = ((UserListener.ReceivedUserMessage) o).address;
-            UserMessage bm = ((UserListener.ReceivedUserMessage) o).userMessage;
+            UserMessage um = ((UserListener.ReceivedUserMessage) o).userMessage;
 
-            switch (bm.type) {
+            switch (um.type) {
                 case USERDB_REQUEST:
-                    System.out.println("Received UserDB request.");
                     if (isUserDBAuthority()) {
-                        System.out.println("Sending UserDB.");
                         try {
                             sendUserDB(addr);
-                            System.out.println("Done sending.");
                         } catch (IOException e) {
                             e.printStackTrace();
                         }
                     }
                     break;
                 case NEWUSER:
-                    System.out.println("Received 'new user' notification.");
                     synchronized (userDB) {
-                        userDB.add(new User(bm.pseudo, addr));
+                        userDB.add(new User(um.pseudo, addr));
                     }
                     break;
                 case USERLEAVING:
-                    System.out.println("Received 'user leaving' notification");
                     synchronized (userDB) {
                         userDB.remove(getUserByIp(addr));
                     }
                     break;
             }
+
+            setChanged();
+            notifyObservers(um);
         }
     }
 }

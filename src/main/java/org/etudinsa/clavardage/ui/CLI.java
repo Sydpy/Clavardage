@@ -5,6 +5,7 @@ import org.etudinsa.clavardage.sessions.Session;
 import org.etudinsa.clavardage.sessions.SessionManager;
 import org.etudinsa.clavardage.users.User;
 import org.etudinsa.clavardage.users.UserManager;
+import org.etudinsa.clavardage.users.UserMessage;
 
 import java.io.IOException;
 import java.net.InetAddress;
@@ -51,23 +52,34 @@ public class CLI extends UI implements Runnable {
     public void update(Observable observable, Object o) {
 
         if (observable instanceof UserManager) {
-            UserManager um = (UserManager) observable;
             //TODO
+
+            UserMessage um = (UserMessage) o;
+
+            System.out.println();
+            System.out.println("UserManager : " + um.toString());
+
+            if (um.type == UserMessage.Type.USERDB_REQUEST && userManager.isUserDBAuthority())
+                System.out.println("UserManager : Answering");
+
+            printPrompt();
 
         } else if (observable instanceof SessionManager) {
 
-            if (mode == CLIMode.CHAT) {
+            Session s = (Session) o;
+            Message lastMessage = s.getMessages().get(s.getMessages().size() - 1);
+            User sender = lastMessage.getSender();
 
-                SessionManager sm = (SessionManager) observable;
-                Session s = (Session) o;
+            System.out.println();
 
-                Message lastMessage = s.getMessages().get(s.getMessages().size() - 1);
-
-                if (lastMessage.getSender().equals(UserManager.getInstance().getMyUser())) {
-                    System.out.println("SENT : " + lastMessage.getContent());
-                } else if (lastMessage.getSender().pseudo.equals(distantUser)) {
-                    System.out.println("RECV : " + lastMessage.getContent());
-                }
+            if (sender.pseudo.equals(distantUser)) {
+                System.out.println("RECV : " + lastMessage.getContent());
+                printPrompt();
+            } else if (sender.pseudo.equals(userManager.getMyUser().pseudo)) {
+                System.out.println("SENT : " + lastMessage.getContent());
+            } else {
+                System.out.println("SessionManager : New message from " + sender.pseudo);
+                printPrompt();
             }
         }
     }
@@ -79,7 +91,7 @@ public class CLI extends UI implements Runnable {
                 System.out.print("> ");
                 break;
             case CHAT:
-                System.out.println(distantUser + " > ");
+                System.out.print(distantUser + " > ");
                 break;
         }
     }
@@ -105,6 +117,27 @@ public class CLI extends UI implements Runnable {
     private void chat(String pseudo) {
         mode = CLIMode.CHAT;
         distantUser = pseudo;
+
+        try {
+            Session session = sessionManager.getSessionByDistantUserPseudo(distantUser);
+
+            if (session == null) {
+                System.out.println("No session yet, start chating");
+            } else {
+
+                for (Message message : session.getMessages()) {
+                    User sender = message.getSender();
+                    if (sender.equals(userManager.getMyUser())) {
+                        System.out.println("SENT : " + message.getContent());
+                    } else {
+                        System.out.println("RECV : " + message.getContent());
+                    }
+                }
+            }
+
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
     }
 
     private void executeHomeCommand(Command cmd) {
