@@ -1,8 +1,9 @@
 package org.etudinsa.clavardage.sessions;
 
-import java.io.BufferedReader;
+import java.io.EOFException;
 import java.io.IOException;
-import java.io.InputStreamReader;
+import java.io.InputStream;
+import java.io.ObjectInputStream;
 import java.net.ServerSocket;
 import java.net.Socket;
 import java.util.Observable;
@@ -25,12 +26,18 @@ class SessionListener extends Observable implements Runnable {
 
 			try {
 				Socket client = ssocket.accept();
-				BufferedReader in = new BufferedReader(new InputStreamReader(client.getInputStream()));
-				String content = in.readLine();
-				Message msg = new Message(content,UserManager.getInstance().getMyUser(),UserManager.getInstance().getUserByIp(client.getInetAddress()));
-				
-				setChanged();
-				notifyObservers(msg);
+	            InputStream is = client.getInputStream();
+	            ObjectInputStream objectInputStream = new ObjectInputStream(is);
+	            try {
+					MessageContent msgContent = (MessageContent) objectInputStream.readObject();
+					Message msg = new Message(msgContent.getContent(),UserManager.getInstance().getMyUser(),UserManager.getInstance().getUserByIp(client.getInetAddress()),msgContent.getDate());
+					setChanged();
+					notifyObservers(msg);
+				} catch (EOFException ef) {
+                    System.out.println("EOFException in SessionListener");
+				} catch (ClassNotFoundException e) {
+					e.printStackTrace();
+				}
 			} catch (IOException e) {
 				e.printStackTrace();
 			}
