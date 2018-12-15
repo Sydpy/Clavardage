@@ -33,5 +33,9 @@ public class Message {
 		return recipient;
 	}
 
+	@Override
+	public String toString() {
+		return "sender: " + sender.toString() + " recipient: " + recipient.toString() + " msg: " + content.toString();
+	}
 	
 }

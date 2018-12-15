@@ -53,9 +53,12 @@ public class Session {
 				Jsonb jsonb = JsonbBuilder.create(config);
 				String line;
 				Message msg;
-				while ((line = br.readLine()) != null) {
+				while ((line = br.readLine()) != null && (!line.equals(""))) {
 					msg = jsonb.fromJson(line, Message.class);
 					messages.add(msg);
+				}
+				for (Message m:messages) {
+					System.out.println(m.toString());
 				}
 			} catch (FileNotFoundException e) {
 				e.printStackTrace();
