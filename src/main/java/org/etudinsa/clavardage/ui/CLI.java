@@ -5,12 +5,9 @@ import org.etudinsa.clavardage.sessions.Session;
 import org.etudinsa.clavardage.sessions.SessionManager;
 import org.etudinsa.clavardage.users.User;
 import org.etudinsa.clavardage.users.UserManager;
-import org.etudinsa.clavardage.users.UserMessage;
-
 import java.net.SocketException;
 import java.security.*;
 import java.util.Date;
-import java.util.Observable;
 import java.util.Scanner;
 
 public class CLI implements UI, Runnable {
@@ -144,10 +141,6 @@ public class CLI implements UI, Runnable {
         try {
             Session session = sessionManager.getSessionByDistantUserPseudo(pseudo);
 
-            if (session == null) {
-                System.out.println("No session yet, start chatting");
-            } else {
-
                 for (Message message : session.getMessages()) {
 
                     User sender = message.getSender();
@@ -166,7 +159,6 @@ public class CLI implements UI, Runnable {
 
                     System.out.println(sb.toString());
                 }
-            }
 
             mode = CLIMode.CHAT;
             distantUser = pseudo;

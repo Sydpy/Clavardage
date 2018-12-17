@@ -59,15 +59,19 @@ public class SessionManager {
 		return nSession;
 	}
 
-	public void closeSession(String pseudo) {
-		try {
-			Session session = getSessionByDistantUserPseudo(pseudo);
-			session.close();
-			this.sessions.remove(session);
-		} catch (Exception e) {
-			System.out.println("Impossible to close the session");
-			e.printStackTrace();
-		}
+	public void closeSession(String pseudo) throws Exception {
+			Session session;
+			User dUser = UserManager.getInstance().getUserByPseudo(pseudo);
+			if (dUser == null) {
+				throw new Exception("No user with this pseudo : " + pseudo);
+			}
+			for (int i = 0; i < this.sessions.size(); i++) {
+				if (this.sessions.get(i).getDistantUser() == dUser) {
+					session = sessions.get(i);
+					session.close();
+					this.sessions.remove(session);
+				}
+			}
 	}
 
 	//We get the session between 2 users or create it if it doesn't exist 
@@ -83,10 +87,6 @@ public class SessionManager {
 			throw new Exception("No user with this pseudo!!");
 		}
 		Session session = getSessionByDistantUserPseudo(pseudo);
-		if (session == null) {
-			session = openSession(pseudo);
-		}
-
 		MessageContent messageContent = new MessageContent(content);
 		String signature = myUser.signObject(messageContent);
 		SignedMessageContent sigMsgContent = new SignedMessageContent(messageContent, signature);
@@ -105,6 +105,7 @@ public class SessionManager {
 		ui.messageSent(message);
 	}
 
+	//Get a session by the pseudo of the distant user or create one if it doesn't exist
 	public Session getSessionByDistantUserPseudo(String pseudo) throws Exception {
 		User dUser = UserManager.getInstance().getUserByPseudo(pseudo);
 		if (dUser == null) {
@@ -115,7 +116,7 @@ public class SessionManager {
 				return this.sessions.get(i);
 			}
 		}
-		return null;
+		return openSession(pseudo);
 	}
 
 	public void receivedMessageFrom(SignedMessageContent sigMsgContent, InetAddress addr)
@@ -131,9 +132,6 @@ public class SessionManager {
 			return;
 
 		Session session = getSessionByDistantUserPseudo(sender.pseudo);
-		if (session == null) {
-			session = openSession(sender.pseudo);
-		}
 
 		User myUser = UserManager.getInstance().getMyUser();
 

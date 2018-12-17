@@ -57,9 +57,6 @@ public class Session {
 					msg = jsonb.fromJson(line, Message.class);
 					messages.add(msg);
 				}
-				for (Message m:messages) {
-					System.out.println(m.toString());
-				}
 			} catch (FileNotFoundException e) {
 				e.printStackTrace();
 			} catch (IOException e) {
@@ -85,7 +82,6 @@ public class Session {
 		} catch (FileNotFoundException | UnsupportedEncodingException e) {
 			e.printStackTrace();
 		}
-		System.out.println("session " + UserManager.getInstance().getMyUser() + " & " + distantUser + " " + sb.toString());
 	}
 
 }
