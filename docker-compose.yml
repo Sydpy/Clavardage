@@ -6,8 +6,8 @@ services:
     networks:
       - clavardnet
     volumes:
-      - ./target/classes:/app
-    command: java -cp /app org.etudinsa.clavardage.ui.CLI
+      - ./target:/app
+    command: java -cp '/app/classes:/app/dependency/*' org.etudinsa.clavardage.ui.CLI
     stdin_open: true
     tty: true
 
