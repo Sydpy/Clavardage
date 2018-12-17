@@ -4,7 +4,7 @@ import java.net.*;
 import java.util.Arrays;
 import java.util.Observable;
 
-class UserListener extends Observable implements Runnable {
+class UserListener implements Runnable {
 
     static class ReceivedUserMessage {
 
@@ -43,10 +43,9 @@ class UserListener extends Observable implements Runnable {
                 byte[] data = packet.getData();
 
                 UserMessage message = UserMessage.fromString(new String(data));
+
+                UserManager.getInstance().receivedMessageFrom(message, packet.getAddress());
                 
-                setChanged();
-                notifyObservers(new ReceivedUserMessage(message, packet.getAddress()));
-                                
             } catch (SocketTimeoutException ignored) {
             } catch (Exception e) {
                 e.printStackTrace();

@@ -1,5 +1,6 @@
 package org.etudinsa.clavardage.users;
 
+import org.etudinsa.clavardage.ui.UI;
 import sun.security.rsa.RSAPublicKeyImpl;
 
 import java.io.*;
@@ -7,7 +8,7 @@ import java.net.*;
 import java.security.*;
 import java.util.*;
 
-public class UserManager extends Observable implements Observer {
+public class UserManager {
 
     private final static int USERDB_RETRIEVE_PORT = 9191;
 
@@ -24,7 +25,13 @@ public class UserManager extends Observable implements Observer {
 
     private boolean connected = false;
 
+    private UI ui;
+
     private UserManager() {}
+
+    public void registerUI(UI ui) {
+        this.ui = ui;
+    }
 
     public void joinNetwork(String pseudo, KeyPair keyPair) throws Exception {
 
@@ -119,8 +126,6 @@ public class UserManager extends Observable implements Observer {
     private void startListener() throws SocketException {
         userListener = new UserListener();
 
-        userListener.addObserver(this);
-
         Thread userListenerThread = new Thread(userListener);
         userListenerThread.start();
     }
@@ -209,69 +214,65 @@ public class UserManager extends Observable implements Observer {
         socket.close();
     }
 
-    @Override
-    public void update(Observable observable, Object o) {
+    public void receivedMessageFrom(UserMessage message, InetAddress address) {
 
-        if (o instanceof UserListener.ReceivedUserMessage) {
+        switch (message.type) {
 
-            InetAddress addr = ((UserListener.ReceivedUserMessage) o).address;
-            UserMessage um = ((UserListener.ReceivedUserMessage) o).userMessage;
-
-            switch (um.type) {
-                case USERDB_REQUEST:
-                    if (isUserDBAuthority()) {
-                        try {
-                            setChanged();
-                            sendUserDB(addr);
-                        } catch (IOException e) {
-                            e.printStackTrace();
-                        }
-                    }
-                    break;
-                case NEWUSER:
-
-                    if (um.content.length != 2) break;
-
+            case USERDB_REQUEST:
+                if (isUserDBAuthority()) {
                     try {
-
-                        String pseudo = um.content[0];
-                        PublicKey publicKey = new RSAPublicKeyImpl(Base64.getMimeDecoder().decode(um.content[1]));
-
-                        synchronized (userDB) {
-                            setChanged();
-                            userDB.add(new User(pseudo, addr, publicKey));
-                        }
-
-                    } catch (InvalidKeyException e) {
+                        sendUserDB(address);
+                    } catch (IOException e) {
                         e.printStackTrace();
                     }
+                }
+                break;
 
-                    break;
-                case USERLEAVING:
+            case NEWUSER:
 
-                    User userLeaving = getUserByIp(addr);
-                    if (userLeaving == null)
-                        break;
+                if (message.content.length != 2) break;
 
-                    if (um.content.length != 1)
-                        break;
+                try {
 
-                    try {
-                        if (!userLeaving.verifySig(UserMessage.Type.USERLEAVING, um.content[0]))
-                            break;
+                    String pseudo = message.content[0];
+                    PublicKey publicKey = new RSAPublicKeyImpl(Base64.getMimeDecoder().decode(message.content[1]));
 
-                        synchronized (userDB) {
-                            setChanged();
-                            userDB.remove(getUserByIp(addr));
-                        }
+                    User newUser = new User(pseudo, address, publicKey);
 
-                    } catch (Exception e) {
-                        e.printStackTrace();
+                    synchronized (userDB) {
+                        userDB.add(newUser);
                     }
-                    break;
-            }
 
-            notifyObservers(um);
+                    ui.newUser(newUser);
+
+                } catch (InvalidKeyException e) {
+                    e.printStackTrace();
+                }
+
+                break;
+            case USERLEAVING:
+
+                User userLeaving = getUserByIp(address);
+                if (userLeaving == null)
+                    break;
+
+                if (message.content.length != 1)
+                    break;
+
+                try {
+                    if (!userLeaving.verifySig(UserMessage.Type.USERLEAVING, message.content[0]))
+                        break;
+
+                    synchronized (userDB) {
+                        userDB.remove(userLeaving);
+                    }
+
+                    ui.userLeaving(userLeaving);
+
+                } catch (Exception e) {
+                    e.printStackTrace();
+                }
+                break;
         }
     }
 }

@@ -13,7 +13,8 @@ import java.util.Date;
 import java.util.Observable;
 import java.util.Scanner;
 
-public class CLI extends UI implements Runnable {
+public class CLI implements UI, Runnable {
+
 
     enum CLIMode { HOME, CHAT }
 
@@ -31,9 +32,9 @@ public class CLI extends UI implements Runnable {
             String[] splitted = str.split(" ", 2);
 
             if (splitted.length == 2)
-                return new Command(splitted[0], splitted[1]);
+                return new Command(splitted[0].trim(), splitted[1].trim());
 
-            return new Command(splitted[0], "");
+            return new Command(splitted[0].trim(), "");
         }
     }
 
@@ -48,8 +49,8 @@ public class CLI extends UI implements Runnable {
     private Scanner scanner = new Scanner(System.in);
 
     private CLI() throws NoSuchAlgorithmException, NoSuchProviderException {
-        userManager.addObserver(this);
-        sessionManager.addObserver(this);
+        userManager.registerUI(this);
+        sessionManager.registerUI(this);
 
         keyGenerator = KeyPairGenerator.getInstance("RSA");
         SecureRandom rng = SecureRandom.getInstance("SHA1PRNG", "SUN");
@@ -58,39 +59,54 @@ public class CLI extends UI implements Runnable {
     }
 
     @Override
-    public void update(Observable observable, Object o) {
+    public void messageSent(Message message) {
+        StringBuilder sb = new StringBuilder("\033[1A\r\033[32m");
+        sb.append(message.getContent().getDate());
+        sb.append(" : ");
+        sb.append(message.getContent().getContent());
 
-        if (observable instanceof UserManager) {
-            //TODO
+        sb.append("\033[37m");
+        System.out.println(sb.toString());
+    }
 
-            UserMessage um = (UserMessage) o;
-
-            System.out.println();
-            System.out.print("UserManager : " + um.type );
-
-            if (um.type == UserMessage.Type.NEWUSER) System.out.print(" " + um.content[0]);
-
-            System.out.println();
-            printPrompt();
-
-        } else if (observable instanceof SessionManager) {
-
-            Session s = (Session) o;
-            Message lastMessage = s.getMessages().get(s.getMessages().size() - 1);
-            User sender = lastMessage.getSender();
-
-            System.out.println();
-
-            if (sender.pseudo.equals(distantUser)) {
-                System.out.println(lastMessage.getContent().getDate() + " RECV : " + lastMessage.getContent().getContent());
-                printPrompt();
-            } else if (sender.pseudo.equals(userManager.getMyUser().pseudo)) {
-                System.out.println(lastMessage.getContent().getDate() + " SENT : " + lastMessage.getContent().getContent());
-            } else {
-                System.out.println("SessionManager : New message from " + sender.pseudo);
-                printPrompt();
-            }
+    @Override
+    public void messageReceived(Message message) {
+        StringBuilder sb = new StringBuilder("\r\033[34m");
+        if (message.getSender().pseudo.equals(distantUser)) {
+            sb.append(message.getContent().getDate());
+            sb.append(" : ");
+            sb.append(message.getContent().getContent());
+        } else {
+            sb.append("\033[5m");
+            sb.append("New message from ");
+            sb.append(message.getSender().pseudo);
+            sb.append("\033[25m");
         }
+
+        sb.append("\033[37m");
+        System.out.println(sb.toString());
+        printPrompt();
+    }
+
+    @Override
+    public void newUser(User newUser) {
+        StringBuilder sb = new StringBuilder("\r\033[33mNew user ");
+        sb.append(newUser.pseudo);
+
+        sb.append("\033[37m");
+        System.out.println(sb.toString());
+        printPrompt();
+    }
+
+    @Override
+    public void userLeaving(User userLeaving) {
+        StringBuilder sb = new StringBuilder("\r\033[90m");
+        sb.append(userLeaving.pseudo);
+        sb.append(" is leaving");
+
+        sb.append("\033[37m");
+        System.out.println(sb.toString());
+        printPrompt();
     }
 
     private void printPrompt() {
@@ -124,28 +140,39 @@ public class CLI extends UI implements Runnable {
     }
 
     private void chat(String pseudo) {
-        mode = CLIMode.CHAT;
-        distantUser = pseudo;
 
         try {
-            Session session = sessionManager.getSessionByDistantUserPseudo(distantUser);
+            Session session = sessionManager.getSessionByDistantUserPseudo(pseudo);
 
             if (session == null) {
                 System.out.println("No session yet, start chatting");
             } else {
 
                 for (Message message : session.getMessages()) {
+
                     User sender = message.getSender();
+
+                    StringBuilder sb = new StringBuilder();
                     if (sender.equals(userManager.getMyUser())) {
-                        System.out.println(message.getContent().getDate() + " SENT : " + message.getContent().getContent());
+                        sb.append("\033[32m");
                     } else {
-                        System.out.println(message.getContent().getDate() + " RECV : " + message.getContent().getContent());
+                        sb.append("\033[34m");
                     }
+
+                    sb.append(message.getContent().getDate().toString());
+                    sb.append(" : ");
+                    sb.append(message.getContent().getContent());
+                    sb.append("\033[37m");
+
+                    System.out.println(sb.toString());
                 }
             }
 
+            mode = CLIMode.CHAT;
+            distantUser = pseudo;
+
         } catch (Exception e) {
-            e.printStackTrace();
+            System.out.println(e.getMessage());
         }
     }
 

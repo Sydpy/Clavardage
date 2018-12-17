@@ -28,7 +28,7 @@ public class MessageContent implements Serializable {
 	
 	@Override
 	public String toString() {
-		return this.content + " " + this.date.toString();
+		return this.content.toString() + " " + this.date.toString();
 	}
 
 }

@@ -1,7 +1,5 @@
 package org.etudinsa.clavardage.users;
 
-import java.io.ByteArrayOutputStream;
-import java.io.ObjectOutputStream;
 import java.net.InetAddress;
 import java.security.KeyPair;
 import java.security.PrivateKey;

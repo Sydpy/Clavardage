@@ -1,21 +1,18 @@
 package org.etudinsa.clavardage.sessions;
 
+import org.etudinsa.clavardage.ui.UI;
+import org.etudinsa.clavardage.users.MyUser;
+import org.etudinsa.clavardage.users.User;
+import org.etudinsa.clavardage.users.UserManager;
+
 import java.io.IOException;
 import java.io.ObjectOutputStream;
 import java.net.InetAddress;
 import java.net.Socket;
-import java.security.InvalidKeyException;
-import java.security.NoSuchAlgorithmException;
-import java.security.SignatureException;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Observable;
 
-import org.etudinsa.clavardage.users.MyUser;
-import org.etudinsa.clavardage.users.UserManager;
-import org.etudinsa.clavardage.users.User;
-
-public class SessionManager extends Observable {
+public class SessionManager {
 	
     private static SessionManager instance = new SessionManager();
 
@@ -28,7 +25,13 @@ public class SessionManager extends Observable {
 
 	private SessionListener sessionListener;
 
+	private UI ui;
+
 	private SessionManager() {}
+
+	public void registerUI(UI ui) {
+		this.ui = ui;
+	}
 
 	public void start() {
 		try {
@@ -98,15 +101,14 @@ public class SessionManager extends Observable {
 		session.addMessage(message);
 		objectOutputStream.close();
 		socket.close();
-		
-		setChanged();
-		notifyObservers(session);
+
+		ui.messageSent(message);
 	}
 
 	public Session getSessionByDistantUserPseudo(String pseudo) throws Exception {
 		User dUser = UserManager.getInstance().getUserByPseudo(pseudo);
 		if (dUser == null) {
-			throw new Exception("No user with this pseudo!!");
+			throw new Exception("No user with this pseudo : " + pseudo);
 		}
 		for (int i = 0; i < this.sessions.size(); i++) {
 			if (this.sessions.get(i).getDistantUser() == dUser) {
@@ -138,7 +140,6 @@ public class SessionManager extends Observable {
 		Message message = new Message(sigMsgContent.content, myUser, sender);
 		session.addMessage(message);
 
-		setChanged();
-		notifyObservers(session);
+		ui.messageReceived(message);
 	}
 }

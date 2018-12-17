@@ -6,9 +6,6 @@ import java.io.InputStream;
 import java.io.ObjectInputStream;
 import java.net.ServerSocket;
 import java.net.Socket;
-import java.util.Observable;
-
-import org.etudinsa.clavardage.users.UserManager;
 
 class SessionListener implements Runnable {
 
@@ -19,28 +16,23 @@ class SessionListener implements Runnable {
 	SessionListener() throws IOException {
 		this.ssocket = new ServerSocket(LISTENING_PORT);
 	}
-	
+
 	public void run() {
 
 		while(!ssocket.isClosed()) {
 
 			try {
 				Socket client = ssocket.accept();
-	            InputStream is = client.getInputStream();
-	            ObjectInputStream objectInputStream = new ObjectInputStream(is);
-	            try {
-					SignedMessageContent sigMsgContent = (SignedMessageContent) objectInputStream.readObject();
+				InputStream is = client.getInputStream();
+				ObjectInputStream objectInputStream = new ObjectInputStream(is);
+				SignedMessageContent sigMsgContent = (SignedMessageContent) objectInputStream.readObject();
 
-					SessionManager.getInstance().receivedMessageFrom(sigMsgContent, client.getInetAddress());
+				SessionManager.getInstance().receivedMessageFrom(sigMsgContent, client.getInetAddress());
 
-				} catch (EOFException ef) {
-                    System.out.println("EOFException in SessionListener");
-				} catch (ClassNotFoundException e) {
-					e.printStackTrace();
-				} catch (Exception e) {
-					e.printStackTrace();
-				}
-			} catch (IOException e) {
+				client.close();
+
+			} catch (EOFException ignored) {
+			} catch (Exception e) {
 				e.printStackTrace();
 			}
 		}
