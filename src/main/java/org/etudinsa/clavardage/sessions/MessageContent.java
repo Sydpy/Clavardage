@@ -5,20 +5,20 @@ import java.util.Date;
 
 public class MessageContent implements Serializable {
 	
-	private String content;
+	private Serializable content;
 	private Date date;
 	
-	public MessageContent(String content) {
+	public MessageContent(Serializable content) {
 		this.content = content;
 		this.date = new Date();
 	}
 	
-	public MessageContent(String content, Date date) {
+	public MessageContent(Serializable content, Date date) {
 		this.content = content;
 		this.date = date;
 	}
 
-	public String getContent() {
+	public Serializable getContent() {
 		return content;
 	}
 
