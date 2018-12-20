@@ -42,7 +42,7 @@ public class User implements Serializable {
 
         return signer.verify(Base64.getMimeDecoder().decode(sig));
     }
-    
+
     @Override
     public String toString() {
     	return this.pseudo + " " + this.ip;
