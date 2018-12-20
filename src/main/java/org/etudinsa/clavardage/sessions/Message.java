@@ -4,6 +4,10 @@ import java.util.Date;
 
 import org.etudinsa.clavardage.users.User;
 
+/**
+ * Class to represent the messages exchanged between users.
+ *
+ */
 public class Message {
 	private MessageContent content;
 	private User sender;

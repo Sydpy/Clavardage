@@ -12,6 +12,11 @@ import java.net.Socket;
 import java.util.ArrayList;
 import java.util.List;
 
+/**
+ * 
+ * Class to manage all the active chats (open, close chats and send, receive messages in chats).
+ *
+ */
 public class SessionManager {
 	
     private static SessionManager instance = new SessionManager();
@@ -20,6 +25,9 @@ public class SessionManager {
         return instance;
     }
     
+    /**
+     * All the active chats.
+     */
 	private List<Session> sessions = new ArrayList<>();
 	private ObjectOutputStream objectOutputStream = null;
 
@@ -33,6 +41,9 @@ public class SessionManager {
 		this.ui = ui;
 	}
 
+	/**
+	 * Start a thread executing the SessionListener.
+	 */
 	public void start() {
 		try {
 			sessionListener = new SessionListener();
@@ -45,6 +56,10 @@ public class SessionManager {
 			System.exit(1);
 		}
 	}
+	
+	/**
+	 * Stop the thread executing the SessionListener and all the open chats.
+	 */
 	public void stop() {
 	   sessionListener.stop();
 	   for (int i = 0; i < sessions.size(); i++) {
@@ -52,6 +67,13 @@ public class SessionManager {
 		   }
 	}
 
+	/**
+	 * Create a new chat with the user with the given pseudo.
+	 * @param pseudo of the distant user
+	 * @return the chat created
+	 * @throws Exception thrown if the user with the given pseudo is not active or
+	 * 							if a chat with this user is already open
+	 */
 	public Session openSession(String pseudo) throws Exception {
 		User distantUser = UserManager.getInstance().getUserByPseudo(pseudo);
 		if (distantUser == null) {
@@ -65,6 +87,12 @@ public class SessionManager {
 		return nSession;
 	}
 
+	/**
+	 * Close the active chat with the user with the given pseudo.
+	 * @param pseudo of the distant user
+	 * @throws Exception thrown if the user with the given pseudo is not active or
+	 * 							if there is no active chat with the user
+	 */
 	public void closeSession(String pseudo) throws Exception {
 			Session session;
 			User dUser = UserManager.getInstance().getUserByPseudo(pseudo);
@@ -85,9 +113,13 @@ public class SessionManager {
 			}
 	}
 
-	//We get the session between 2 users or create it if it doesn't exist 
-	//and we create a socket to send the message
-	//We notify the UI with the message sent
+	/**
+	 * Send a message with the given content to the user with the given pseudo.
+	 * @param content of the message to send
+	 * @param pseudo of the distant user
+	 * @throws Exception thrown if the current user is not connected or
+	 * 							if the user with the given pseudo is not active
+	 */
 	public void sendMessage(String content, String pseudo) throws Exception {
 		User receiver = UserManager.getInstance().getUserByPseudo(pseudo);
 		MyUser myUser = UserManager.getInstance().getMyUser();
@@ -97,11 +129,13 @@ public class SessionManager {
 		if (receiver == null) {
 			throw new Exception("No user with this pseudo: " + pseudo);
 		}
+		//We get the session between 2 users or create it if it doesn't exist 
 		Session session = getSessionByDistantUserPseudo(pseudo);
 		MessageContent messageContent = new MessageContent(content);
 		String signature = myUser.signObject(messageContent);
 		SignedMessageContent sigMsgContent = new SignedMessageContent(messageContent, signature);
 
+		//We create a socket to send the message
 		Socket socket = new Socket(receiver.ip,SessionListener.LISTENING_PORT);
 		objectOutputStream = new ObjectOutputStream(socket.getOutputStream());
         objectOutputStream.writeObject(sigMsgContent);
@@ -113,10 +147,16 @@ public class SessionManager {
 		objectOutputStream.close();
 		socket.close();
 
+		//We notify the UI with the message sent
 		ui.messageSent(message);
 	}
 
-	//Get a session by the pseudo of the distant user or create one if it doesn't exist
+	/**
+	 * Retrieve the chat with the user with the given pseudo or create it if it doesn't exist.
+	 * @param pseudo of the distant user
+	 * @return the chat
+	 * @throws Exception thrown if the user with the given pseudo is not active
+	 */
 	public Session getSessionByDistantUserPseudo(String pseudo) throws Exception {
 		User dUser = UserManager.getInstance().getUserByPseudo(pseudo);
 		if (dUser == null) {
@@ -130,6 +170,12 @@ public class SessionManager {
 		return openSession(pseudo);
 	}
 
+	/**
+	 * Add the received message to the corresponding chat
+	 * @param sigMsgContent content of the received message
+	 * @param addr address of the sender
+	 * @throws Exception
+	 */
 	public void receivedMessageFrom(SignedMessageContent sigMsgContent, InetAddress addr)
 			throws Exception {
 

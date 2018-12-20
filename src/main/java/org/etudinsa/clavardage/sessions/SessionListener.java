@@ -7,6 +7,11 @@ import java.io.ObjectInputStream;
 import java.net.ServerSocket;
 import java.net.Socket;
 
+/**
+ * 
+ * Class that listens on a port to receive all the messages concerning chats, using a ServerSocket. 
+ *
+ */
 class SessionListener implements Runnable {
 
 	final static int LISTENING_PORT = 1707;
@@ -17,6 +22,9 @@ class SessionListener implements Runnable {
 		this.ssocket = new ServerSocket(LISTENING_PORT);
 	}
 
+	/**
+	 * Listens on the port LISTENING_PORT and calls the SessionManager to process the messages received.
+	 */
 	public void run() {
 
 		while(!ssocket.isClosed()) {
