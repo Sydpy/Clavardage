@@ -4,6 +4,7 @@ import org.etudinsa.clavardage.ui.UI;
 import sun.security.rsa.RSAPublicKeyImpl;
 
 import java.io.*;
+import java.math.BigInteger;
 import java.net.*;
 import java.security.*;
 import java.util.*;
@@ -283,5 +284,31 @@ public class UserManager {
                 }
                 break;
         }
+    }
+
+    public User[] createMockUserDB(int size) {
+
+        assert size > 0;
+
+        Random rand = new Random();
+
+        InetAddress addr = InetAddress.getLoopbackAddress();
+
+        User[] userDB = new User[size];
+        userDB[0] = myUser;
+        for (int i = 1; i < size; i++) {
+
+            String pseudo = Long.toHexString(Double.doubleToLongBits(Math.random()));
+            PublicKey pkey = null;
+            try {
+                pkey = new RSAPublicKeyImpl(BigInteger.probablePrime(512, rand), BigInteger.probablePrime(256, rand));
+            } catch (InvalidKeyException e) {
+                e.printStackTrace();
+            }
+
+            userDB[i] = new User(pseudo, addr, pkey);
+        }
+
+        return userDB;
     }
 }
