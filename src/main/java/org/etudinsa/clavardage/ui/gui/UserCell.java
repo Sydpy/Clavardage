@@ -55,8 +55,10 @@ public class UserCell extends ListCell<User> {
     public void updateSelected(boolean selected) {
         super.updateSelected(selected);
 
-        if(user != null) {
-            System.out.println(user.pseudo);
+        if(user != null && selected) {
+            GUI.getHomeStage().homeController.openChat(user);
         }
     }
+
+
 }

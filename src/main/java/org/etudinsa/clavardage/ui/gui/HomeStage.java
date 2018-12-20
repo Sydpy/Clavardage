@@ -5,6 +5,7 @@ import javafx.scene.Parent;
 import javafx.scene.Scene;
 import javafx.stage.Stage;
 import org.etudinsa.clavardage.sessions.SessionManager;
+import org.etudinsa.clavardage.users.User;
 import org.etudinsa.clavardage.users.UserManager;
 
 import java.io.IOException;
@@ -28,8 +29,8 @@ class HomeStage extends Stage {
     }
 
     public void refreshUserList() {
-        //homeController.setUserDB(UserManager.getInstance().createMockUserDB(10));
-        homeController.setUserDB(UserManager.getInstance().getUserDB());
+        homeController.setUserDB(UserManager.getInstance().createMockUserDB(10));
+        //homeController.setUserDB(UserManager.getInstance().getUserDB());
     }
 
     @Override
