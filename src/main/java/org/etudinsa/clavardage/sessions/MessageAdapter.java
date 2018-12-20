@@ -17,7 +17,11 @@ import javax.json.bind.adapter.JsonbAdapter;
 
 import org.etudinsa.clavardage.users.UserManager;
 
-public class MessagesAdapter implements JsonbAdapter<Message, JsonObject> {
+/**
+ * Class implementing methods used to convert a Message to a JsonObject and vice versa.
+ *
+ */
+public class MessageAdapter implements JsonbAdapter<Message, JsonObject> {
 
 	@Override
 	public Message adaptFromJson(JsonObject adapted) throws Exception {

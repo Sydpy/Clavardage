@@ -17,6 +17,9 @@ import javax.json.bind.JsonbConfig;
 
 import org.etudinsa.clavardage.users.User;
 
+/**
+ * Class to represent a chat between the current user and another user.
+ */
 public class Session {
 	private User distantUser;
 	private List<Message> messages;
@@ -27,6 +30,9 @@ public class Session {
 		loadMessages();
 	}
 
+	/**
+	 * Close the chat by saving all the messages exchanged.
+	 */
 	public void close() {
 		this.saveMessages();
 	}
@@ -39,17 +45,24 @@ public class Session {
 		return messages;
 	}
 
+	/**
+	 * Add a new message to the chat.
+	 * @param message to add
+	 */
 	public void addMessage(Message message) {
 		this.messages.add(message);
 	}
 
+	/**
+	 * Retrieve all the messages previously exchanged and stored as a Json file locally. 
+	 */
 	private void loadMessages(){
 		String path = distantUser.pseudo + ".json";
 		if ((new File(path)).exists()) {
 			BufferedReader br;
 			try {
 				br = new BufferedReader(new FileReader(path));
-				JsonbConfig config = new JsonbConfig().withAdapters(new MessagesAdapter());
+				JsonbConfig config = new JsonbConfig().withAdapters(new MessageAdapter());
 				Jsonb jsonb = JsonbBuilder.create(config);
 				String line;
 				Message msg;
@@ -65,8 +78,11 @@ public class Session {
 		}
 	}
 
+	/**
+	 * Store locally all the messages exchanged as a Json file. 
+	 */
 	private void saveMessages() {
-		JsonbConfig config = new JsonbConfig().withAdapters(new MessagesAdapter());
+		JsonbConfig config = new JsonbConfig().withAdapters(new MessageAdapter());
 		Jsonb jsonb = JsonbBuilder.create(config);
 		StringBuilder sb = new StringBuilder();
 		for (Message msg : messages) {

@@ -3,6 +3,11 @@ package org.etudinsa.clavardage.sessions;
 import java.io.Serializable;
 import java.util.Date;
 
+/**
+ * Class to represent the content of the messages exchanged.
+ * The content must be a Serializable object.
+ *
+ */
 public class MessageContent implements Serializable {
 	
 	private Serializable content;
