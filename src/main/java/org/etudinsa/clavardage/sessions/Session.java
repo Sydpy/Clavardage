@@ -9,13 +9,13 @@ import java.io.PrintWriter;
 import java.io.UnsupportedEncodingException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 
 import javax.json.bind.Jsonb;
 import javax.json.bind.JsonbBuilder;
 import javax.json.bind.JsonbConfig;
 
 import org.etudinsa.clavardage.users.User;
-import org.etudinsa.clavardage.users.UserManager;
 
 public class Session {
 	private User distantUser;
@@ -82,6 +82,14 @@ public class Session {
 		} catch (FileNotFoundException | UnsupportedEncodingException e) {
 			e.printStackTrace();
 		}
+	}
+	
+	@Override
+	public boolean equals(Object obj) {
+        if (this == obj) return true;
+        if (obj == null || getClass() != obj.getClass()) return false;
+		Session s = (Session) obj;
+		return Objects.equals(distantUser,s.getDistantUser());
 	}
 
 }

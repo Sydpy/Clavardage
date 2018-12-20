@@ -52,9 +52,15 @@ public class SessionManager {
 		   }
 	}
 
-	public Session openSession(String pseudo) throws IOException {
+	public Session openSession(String pseudo) throws Exception {
 		User distantUser = UserManager.getInstance().getUserByPseudo(pseudo);
+		if (distantUser == null) {
+			throw new Exception("No user with this pseudo: " + pseudo);
+		}
 		Session nSession = new Session(distantUser);
+		if (this.sessions.contains(nSession)) {
+			throw new Exception("Session already exists");
+		}
 		this.sessions.add(nSession);
 		return nSession;
 	}
@@ -63,14 +69,19 @@ public class SessionManager {
 			Session session;
 			User dUser = UserManager.getInstance().getUserByPseudo(pseudo);
 			if (dUser == null) {
-				throw new Exception("No user with this pseudo : " + pseudo);
+				throw new Exception("No user with this pseudo: " + pseudo);
 			}
+			boolean removed =  false;
 			for (int i = 0; i < this.sessions.size(); i++) {
 				if (this.sessions.get(i).getDistantUser() == dUser) {
 					session = sessions.get(i);
 					session.close();
 					this.sessions.remove(session);
+					removed = true;
 				}
+			}
+			if (!removed) {
+				throw new Exception("No session with a user with the pseudo: " + pseudo);
 			}
 	}
 
@@ -84,7 +95,7 @@ public class SessionManager {
 			throw new Exception("You need to create a user!!");
 		}
 		if (receiver == null) {
-			throw new Exception("No user with this pseudo!!");
+			throw new Exception("No user with this pseudo: " + pseudo);
 		}
 		Session session = getSessionByDistantUserPseudo(pseudo);
 		MessageContent messageContent = new MessageContent(content);
@@ -109,7 +120,7 @@ public class SessionManager {
 	public Session getSessionByDistantUserPseudo(String pseudo) throws Exception {
 		User dUser = UserManager.getInstance().getUserByPseudo(pseudo);
 		if (dUser == null) {
-			throw new Exception("No user with this pseudo : " + pseudo);
+			throw new Exception("No user with this pseudo: " + pseudo);
 		}
 		for (int i = 0; i < this.sessions.size(); i++) {
 			if (this.sessions.get(i).getDistantUser() == dUser) {

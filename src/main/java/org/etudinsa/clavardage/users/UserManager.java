@@ -19,7 +19,6 @@ public class UserManager {
         return instance;
     }
 
-
     private List<User> userDB = new ArrayList<>();
     private MyUser myUser;
     private UserListener userListener;
@@ -68,9 +67,15 @@ public class UserManager {
         String sig = myUser.signObject(UserMessage.Type.USERLEAVING);
         UserMessage userMessage = new UserMessage(UserMessage.Type.USERLEAVING, sig);
         sendBroadcast(userMessage.toString().getBytes());
+        
+        //Remove my user from the database
+        synchronized (userDB) {
+            userDB.remove(myUser);
+        }
 
         connected = false;
     }
+    
     /**
      * @param ip
      * @return the User instance based on the ip
@@ -155,13 +160,14 @@ public class UserManager {
     private ArrayList<User> retrieveUserDB() throws IOException {
 
         ArrayList<User> userDB = new ArrayList<>();
+        ServerSocket serverSocket = null;
 
         try {
             // We first open the TCP socket on which we are going to retrieve the UserDB from de UserDBAuthority
             // We do it before broadcasting the UserDB Request to be sure that it is open when it will reply
 
             // We configure a timeout on the sockets to handle the case where we are alone
-            ServerSocket serverSocket = new ServerSocket(USERDB_RETRIEVE_PORT);
+            serverSocket = new ServerSocket(USERDB_RETRIEVE_PORT);
             serverSocket.setSoTimeout(2000);
 
             // Ask all the network in hope that the UserDBAuthority answers
@@ -192,6 +198,9 @@ public class UserManager {
             serverSocket.close();
 
         } catch(SocketTimeoutException ignored) {}
+        finally {
+        	serverSocket.close();
+        }
 
         return userDB;
     }
