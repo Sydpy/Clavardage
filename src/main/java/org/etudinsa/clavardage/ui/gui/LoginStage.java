@@ -11,7 +11,7 @@ public class LoginStage extends Stage {
 
     public LoginStage() throws IOException {
 
-        Parent root = FXMLLoader.load(getClass().getClassLoader().getResource("login.fxml"));
+        Parent root = FXMLLoader.load(getClass().getClassLoader().getResource("fxml/login.fxml"));
 
         Scene scene = new Scene(root, 300, 275);
 

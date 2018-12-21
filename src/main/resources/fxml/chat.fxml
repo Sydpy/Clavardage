@@ -17,7 +17,7 @@
       </ScrollPane>
       <AnchorPane maxHeight="-Infinity" minHeight="-Infinity" prefHeight="50.0">
          <children>
-            <TextArea fx:id="messageTextArea" promptText="Your message" text=" &#10;" AnchorPane.bottomAnchor="5.0" AnchorPane.leftAnchor="5.0" AnchorPane.rightAnchor="80.0" AnchorPane.topAnchor="5.0" />
+            <TextArea fx:id="messageTextArea" promptText="Your message" text="" AnchorPane.bottomAnchor="5.0" AnchorPane.leftAnchor="5.0" AnchorPane.rightAnchor="80.0" AnchorPane.topAnchor="5.0" />
           <Button maxWidth="-Infinity" minWidth="-Infinity" mnemonicParsing="false" onMouseClicked="#sendMessage" prefWidth="70.0" text="Send" AnchorPane.bottomAnchor="5.0" AnchorPane.rightAnchor="5.0" AnchorPane.topAnchor="5.0" />
          </children>
       </AnchorPane>

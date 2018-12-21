@@ -25,6 +25,8 @@ public class HomeController implements Initializable {
 
     private ObservableList<User> userList = FXCollections.observableArrayList();
 
+
+
     @Override
     public void initialize(URL url, ResourceBundle resourceBundle) {
         userListView.setItems(userList);
@@ -42,8 +44,14 @@ public class HomeController implements Initializable {
 
         Tab tab;
         if (filtered.isEmpty()) {
-            tab = new Tab(user.pseudo);
-            tabPane.getTabs().add(tab);
+
+            try {
+                tab = new ChatTab(user);
+            } catch (Exception e) {
+                e.printStackTrace();
+                return;
+            }
+
         } else {
             tab = filtered.get(0);
         }

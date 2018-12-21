@@ -4,19 +4,22 @@ import javafx.fxml.FXMLLoader;
 import javafx.scene.Parent;
 import javafx.scene.Scene;
 import javafx.stage.Stage;
+import org.etudinsa.clavardage.sessions.Message;
 import org.etudinsa.clavardage.sessions.SessionManager;
+import org.etudinsa.clavardage.sessions.SessionObserver;
 import org.etudinsa.clavardage.users.User;
 import org.etudinsa.clavardage.users.UserManager;
+import org.etudinsa.clavardage.users.UserObserver;
 
 import java.io.IOException;
 
-class HomeStage extends Stage {
+class HomeStage extends Stage implements SessionObserver, UserObserver {
 
     final HomeController homeController;
 
     HomeStage() throws IOException {
 
-        FXMLLoader loader = new FXMLLoader(getClass().getClassLoader().getResource("home.fxml"));
+        FXMLLoader loader = new FXMLLoader(getClass().getClassLoader().getResource("fxml/home.fxml"));
 
         Parent root = loader.load();
 
@@ -26,11 +29,13 @@ class HomeStage extends Stage {
         setScene(scene);
 
         homeController = loader.getController();
+
+        SessionManager.getInstance().registerSessionObserver(this);
+        UserManager.getInstance().registerUserObserver(this);
     }
 
     public void refreshUserList() {
-        homeController.setUserDB(UserManager.getInstance().createMockUserDB(10));
-        //homeController.setUserDB(UserManager.getInstance().getUserDB());
+        homeController.setUserDB(UserManager.getInstance().getUserDB());
     }
 
     @Override
@@ -43,5 +48,25 @@ class HomeStage extends Stage {
         } catch (Exception e) {
             e.printStackTrace();
         }
+    }
+
+    @Override
+    public void messageSent(Message message) {
+        //TODO
+    }
+
+    @Override
+    public void messageReceived(Message message) {
+        //TODO
+    }
+
+    @Override
+    public void newUser(User newUser) {
+        //TODO
+    }
+
+    @Override
+    public void userLeaving(User userLeaving) {
+        //TODO
     }
 }

@@ -1,6 +1,5 @@
 package org.etudinsa.clavardage.sessions;
 
-import org.etudinsa.clavardage.ui.UI;
 import org.etudinsa.clavardage.users.MyUser;
 import org.etudinsa.clavardage.users.User;
 import org.etudinsa.clavardage.users.UserManager;
@@ -13,32 +12,32 @@ import java.util.ArrayList;
 import java.util.List;
 
 /**
- * 
+ *
  * Class to manage all the active chats (open, close chats and send, receive messages in chats).
  *
  */
 public class SessionManager {
-	
-    private static SessionManager instance = new SessionManager();
 
-    public static SessionManager getInstance() {
-        return instance;
-    }
-    
-    /**
-     * All the active chats.
-     */
+	private static SessionManager instance = new SessionManager();
+
+	public static SessionManager getInstance() {
+		return instance;
+	}
+
+	/**
+	 * All the active chats.
+	 */
 	private List<Session> sessions = new ArrayList<>();
 	private ObjectOutputStream objectOutputStream = null;
 
 	private SessionListener sessionListener;
 
-	private UI ui;
+	private SessionObserver sessionObserver;
 
 	private SessionManager() {}
 
-	public void registerUI(UI ui) {
-		this.ui = ui;
+	public void registerSessionObserver(SessionObserver so) {
+		this.sessionObserver = so;
 	}
 
 	/**
@@ -56,15 +55,15 @@ public class SessionManager {
 			System.exit(1);
 		}
 	}
-	
+
 	/**
 	 * Stop the thread executing the SessionListener and all the open chats.
 	 */
 	public void stop() {
-	   sessionListener.stop();
-	   for (int i = 0; i < sessions.size(); i++) {
-		   sessions.get(i).close();
-		   }
+		sessionListener.stop();
+		for (int i = 0; i < sessions.size(); i++) {
+			sessions.get(i).close();
+		}
 	}
 
 	/**
@@ -94,23 +93,23 @@ public class SessionManager {
 	 * 							if there is no active chat with the user
 	 */
 	public void closeSession(String pseudo) throws Exception {
-			Session session;
-			User dUser = UserManager.getInstance().getUserByPseudo(pseudo);
-			if (dUser == null) {
-				throw new Exception("No user with this pseudo: " + pseudo);
+		Session session;
+		User dUser = UserManager.getInstance().getUserByPseudo(pseudo);
+		if (dUser == null) {
+			throw new Exception("No user with this pseudo: " + pseudo);
+		}
+		boolean removed =  false;
+		for (int i = 0; i < this.sessions.size(); i++) {
+			if (this.sessions.get(i).getDistantUser() == dUser) {
+				session = sessions.get(i);
+				session.close();
+				this.sessions.remove(session);
+				removed = true;
 			}
-			boolean removed =  false;
-			for (int i = 0; i < this.sessions.size(); i++) {
-				if (this.sessions.get(i).getDistantUser() == dUser) {
-					session = sessions.get(i);
-					session.close();
-					this.sessions.remove(session);
-					removed = true;
-				}
-			}
-			if (!removed) {
-				throw new Exception("No session with a user with the pseudo: " + pseudo);
-			}
+		}
+		if (!removed) {
+			throw new Exception("No session with a user with the pseudo: " + pseudo);
+		}
 	}
 
 	/**
@@ -138,8 +137,8 @@ public class SessionManager {
 		//We create a socket to send the message
 		Socket socket = new Socket(receiver.ip,SessionListener.LISTENING_PORT);
 		objectOutputStream = new ObjectOutputStream(socket.getOutputStream());
-        objectOutputStream.writeObject(sigMsgContent);
-        objectOutputStream.flush();
+		objectOutputStream.writeObject(sigMsgContent);
+		objectOutputStream.flush();
 
 		Message message = new Message(messageContent, receiver, myUser);
 
@@ -148,7 +147,7 @@ public class SessionManager {
 		socket.close();
 
 		//We notify the UI with the message sent
-		ui.messageSent(message);
+		if (sessionObserver != null) sessionObserver.messageSent(message);
 	}
 
 	/**
@@ -195,6 +194,6 @@ public class SessionManager {
 		Message message = new Message(sigMsgContent.content, myUser, sender);
 		session.addMessage(message);
 
-		ui.messageReceived(message);
+		if (sessionObserver != null) sessionObserver.messageReceived(message);
 	}
 }

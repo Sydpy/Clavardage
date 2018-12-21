@@ -1,6 +1,5 @@
 package org.etudinsa.clavardage.users;
 
-import org.etudinsa.clavardage.ui.UI;
 import sun.security.rsa.RSAPublicKeyImpl;
 
 import java.io.*;
@@ -25,12 +24,12 @@ public class UserManager {
 
     private boolean connected = false;
 
-    private UI ui;
+    private UserObserver userObserver;
 
     private UserManager() {}
 
-    public void registerUI(UI ui) {
-        this.ui = ui;
+    public void registerUserObserver(UserObserver uo) {
+        this.userObserver = uo;
     }
 
     public void joinNetwork(String pseudo, KeyPair keyPair) throws Exception {
@@ -253,7 +252,7 @@ public class UserManager {
                         userDB.add(newUser);
                     }
 
-                    ui.newUser(newUser);
+                    userObserver.newUser(newUser);
 
                 } catch (InvalidKeyException e) {
                     e.printStackTrace();
@@ -277,7 +276,7 @@ public class UserManager {
                         userDB.remove(userLeaving);
                     }
 
-                    ui.userLeaving(userLeaving);
+                    userObserver.userLeaving(userLeaving);
 
                 } catch (Exception e) {
                     e.printStackTrace();

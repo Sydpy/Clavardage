@@ -3,14 +3,17 @@ package org.etudinsa.clavardage.ui;
 import org.etudinsa.clavardage.sessions.Message;
 import org.etudinsa.clavardage.sessions.Session;
 import org.etudinsa.clavardage.sessions.SessionManager;
+import org.etudinsa.clavardage.sessions.SessionObserver;
 import org.etudinsa.clavardage.users.User;
 import org.etudinsa.clavardage.users.UserManager;
+import org.etudinsa.clavardage.users.UserObserver;
+
 import java.net.SocketException;
 import java.security.*;
 import java.util.Date;
 import java.util.Scanner;
 
-public class CLI implements UI, Runnable {
+public class CLI implements UserObserver, SessionObserver, Runnable {
 
 
     enum CLIMode { HOME, CHAT }
@@ -46,8 +49,8 @@ public class CLI implements UI, Runnable {
     private Scanner scanner = new Scanner(System.in);
 
     private CLI() throws NoSuchAlgorithmException, NoSuchProviderException {
-        userManager.registerUI(this);
-        sessionManager.registerUI(this);
+        userManager.registerUserObserver(this);
+        sessionManager.registerSessionObserver(this);
 
         keyGenerator = KeyPairGenerator.getInstance("RSA");
         SecureRandom rng = SecureRandom.getInstance("SHA1PRNG", "SUN");

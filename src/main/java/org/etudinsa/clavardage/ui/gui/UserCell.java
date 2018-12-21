@@ -33,7 +33,7 @@ public class UserCell extends ListCell<User> {
 
         } else {
             if (loader == null) {
-                loader = new FXMLLoader(getClass().getClassLoader().getResource("usercell.fxml"));
+                loader = new FXMLLoader(getClass().getClassLoader().getResource("fxml/usercell.fxml"));
                 loader.setController(this);
 
                 try {
