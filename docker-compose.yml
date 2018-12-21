@@ -1,15 +1,12 @@
 version: '3'
 
 services:
-  clavardage:
-    image: java:8-jre
+  clavardage-cli:
+    build: .
     networks:
       - clavardnet
     volumes:
       - ./target:/app
-    command: java -cp '/app/classes:/app/dependency/*' org.etudinsa.clavardage.ui.CLI
-    stdin_open: true
-    tty: true
 
 networks:
   clavardnet:

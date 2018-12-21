@@ -3,20 +3,17 @@ package org.etudinsa.clavardage.users;
 import sun.security.rsa.RSAPublicKeyImpl;
 
 import java.io.*;
-import java.math.BigInteger;
 import java.net.*;
-import java.security.*;
-import java.util.*;
+import java.security.InvalidKeyException;
+import java.security.KeyPair;
+import java.security.PublicKey;
+import java.util.ArrayList;
+import java.util.Base64;
+import java.util.List;
 
-public class LANUserManager {
+public class LANUserManager extends UserManager {
 
     private final static int USERDB_RETRIEVE_PORT = 9191;
-
-    private static LANUserManager instance = new LANUserManager();
-
-    public static LANUserManager getInstance() {
-        return instance;
-    }
 
     private List<User> userDB = new ArrayList<>();
     private MyUser myUser;
@@ -24,14 +21,10 @@ public class LANUserManager {
 
     private boolean connected = false;
 
-    private UserObserver userObserver;
-
-    private LANUserManager() {}
-
-    public void registerUserObserver(UserObserver uo) {
-        this.userObserver = uo;
+    public LANUserManager() {
     }
 
+    @Override
     public void joinNetwork(String pseudo, KeyPair keyPair) throws Exception {
 
         if (connected) throw new Exception("Already connected");
@@ -55,6 +48,7 @@ public class LANUserManager {
         connected = true;
     }
 
+    @Override
     public void leaveNetwork() throws Exception {
 
         if (!connected) throw new Exception("Already disconnected");
@@ -66,7 +60,7 @@ public class LANUserManager {
         String sig = myUser.signObject(UserMessage.Type.USERLEAVING);
         UserMessage userMessage = new UserMessage(UserMessage.Type.USERLEAVING, sig);
         sendBroadcast(userMessage.toString().getBytes());
-        
+
         //Remove my user from the database
         synchronized (userDB) {
             userDB.remove(myUser);
@@ -74,11 +68,12 @@ public class LANUserManager {
 
         connected = false;
     }
-    
+
     /**
      * @param ip
      * @return the User instance based on the ip
      */
+    @Override
     synchronized public User getUserByIp(InetAddress ip) {
         for (User user : userDB) {
             if (user.ip.equals(ip)) return user;
@@ -90,6 +85,7 @@ public class LANUserManager {
      * @param pseudo
      * @return the User instance based on the pseudo
      */
+    @Override
     synchronized public User getUserByPseudo(String pseudo) {
         for (User user : userDB) {
             if (user.pseudo.equals(pseudo)) return user;
@@ -100,14 +96,17 @@ public class LANUserManager {
     /**
      * @return the User instance associated with this application
      */
+    @Override
     synchronized public MyUser getMyUser() {
         return myUser;
     }
 
+    @Override
     synchronized public User[] getUserDB() {
         return userDB.toArray(new User[userDB.size()]);
     }
 
+    @Override
     public boolean isConnected() {
         return connected;
     }
@@ -129,7 +128,7 @@ public class LANUserManager {
 
 
     private void startListener() throws SocketException {
-        userListener = new UserListener();
+        userListener = new UserListener(this);
 
         Thread userListenerThread = new Thread(userListener);
         userListenerThread.start();
@@ -196,9 +195,9 @@ public class LANUserManager {
             socket.close();
             serverSocket.close();
 
-        } catch(SocketTimeoutException ignored) {}
-        finally {
-        	serverSocket.close();
+        } catch (SocketTimeoutException ignored) {
+        } finally {
+            serverSocket.close();
         }
 
         return userDB;
@@ -223,7 +222,7 @@ public class LANUserManager {
         socket.close();
     }
 
-    public void receivedMessageFrom(UserMessage message, InetAddress address) {
+    void receivedMessageFrom(UserMessage message, InetAddress address) {
 
         switch (message.type) {
 
@@ -252,7 +251,7 @@ public class LANUserManager {
                         userDB.add(newUser);
                     }
 
-                    userObserver.newUser(newUser);
+                    notifyNewUser(newUser);
 
                 } catch (InvalidKeyException e) {
                     e.printStackTrace();
@@ -276,38 +275,12 @@ public class LANUserManager {
                         userDB.remove(userLeaving);
                     }
 
-                    userObserver.userLeaving(userLeaving);
+                    notifyUserLeaving(userLeaving);
 
                 } catch (Exception e) {
                     e.printStackTrace();
                 }
                 break;
         }
-    }
-
-    public User[] createMockUserDB(int size) {
-
-        assert size > 0;
-
-        Random rand = new Random();
-
-        InetAddress addr = InetAddress.getLoopbackAddress();
-
-        User[] userDB = new User[size];
-        userDB[0] = myUser;
-        for (int i = 1; i < size; i++) {
-
-            String pseudo = Long.toHexString(Double.doubleToLongBits(Math.random()));
-            PublicKey pkey = null;
-            try {
-                pkey = new RSAPublicKeyImpl(BigInteger.probablePrime(512, rand), BigInteger.probablePrime(256, rand));
-            } catch (InvalidKeyException e) {
-                e.printStackTrace();
-            }
-
-            userDB[i] = new User(pseudo, addr, pkey);
-        }
-
-        return userDB;
     }
 }

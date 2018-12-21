@@ -4,20 +4,19 @@ import javafx.fxml.FXMLLoader;
 import javafx.scene.Parent;
 import javafx.scene.Scene;
 import javafx.stage.Stage;
+import org.etudinsa.clavardage.GUI;
 import org.etudinsa.clavardage.sessions.Message;
-import org.etudinsa.clavardage.sessions.SessionManager;
 import org.etudinsa.clavardage.sessions.SessionObserver;
 import org.etudinsa.clavardage.users.User;
-import org.etudinsa.clavardage.users.LANUserManager;
 import org.etudinsa.clavardage.users.UserObserver;
 
 import java.io.IOException;
 
-class HomeStage extends Stage implements SessionObserver, UserObserver {
+public class HomeStage extends Stage implements SessionObserver, UserObserver {
 
     final HomeController homeController;
 
-    HomeStage() throws IOException {
+    public HomeStage() throws IOException {
 
         FXMLLoader loader = new FXMLLoader(getClass().getClassLoader().getResource("fxml/home.fxml"));
 
@@ -30,12 +29,12 @@ class HomeStage extends Stage implements SessionObserver, UserObserver {
 
         homeController = loader.getController();
 
-        SessionManager.getInstance().registerSessionObserver(this);
-        LANUserManager.getInstance().registerUserObserver(this);
+        GUI.getSessionManager().registerSessionObserver(this);
+        GUI.getUserManager().registerUserObserver(this);
     }
 
     public void refreshUserList() {
-        homeController.setUserDB(LANUserManager.getInstance().getUserDB());
+        homeController.setUserDB(GUI.getUserManager().getUserDB());
     }
 
     @Override
@@ -43,8 +42,8 @@ class HomeStage extends Stage implements SessionObserver, UserObserver {
         super.close();
 
         try {
-            LANUserManager.getInstance().leaveNetwork();
-            SessionManager.getInstance().stop();
+            GUI.getUserManager().leaveNetwork();
+            GUI.getSessionManager().stopListening();
         } catch (Exception e) {
             e.printStackTrace();
         }

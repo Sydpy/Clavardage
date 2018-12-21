@@ -1,15 +1,13 @@
 package org.etudinsa.clavardage;
 
-import org.etudinsa.clavardage.sessions.Message;
-import org.etudinsa.clavardage.sessions.Session;
-import org.etudinsa.clavardage.sessions.SessionManager;
-import org.etudinsa.clavardage.sessions.SessionObserver;
+import org.etudinsa.clavardage.sessions.*;
 import org.etudinsa.clavardage.users.User;
-import org.etudinsa.clavardage.users.LANUserManager;
+import org.etudinsa.clavardage.users.UserManager;
 import org.etudinsa.clavardage.users.UserObserver;
 
 import java.net.SocketException;
 import java.security.*;
+import java.util.Arrays;
 import java.util.Date;
 import java.util.Scanner;
 
@@ -38,19 +36,20 @@ public class CLI implements UserObserver, SessionObserver, Runnable {
         }
     }
 
-    private CLIMode mode = CLIMode.HOME;
-    private String distantUser = null;
+    private static UserManager userManager;
+    private static SessionManager sessionManager;
 
-    private LANUserManager userManager = LANUserManager.getInstance();
-    private SessionManager sessionManager = SessionManager.getInstance();
+    private CLIMode mode = CLIMode.HOME;
+    private User distantUser = null;
 
     private KeyPairGenerator keyGenerator;
 
     private Scanner scanner = new Scanner(System.in);
 
     private CLI() throws NoSuchAlgorithmException, NoSuchProviderException {
-        userManager.registerUserObserver(this);
-        sessionManager.registerSessionObserver(this);
+
+        this.userManager.registerUserObserver(this);
+        this.sessionManager.registerSessionObserver(this);
 
         keyGenerator = KeyPairGenerator.getInstance("RSA");
         SecureRandom rng = SecureRandom.getInstance("SHA1PRNG", "SUN");
@@ -72,14 +71,14 @@ public class CLI implements UserObserver, SessionObserver, Runnable {
     @Override
     public void messageReceived(Message message) {
         StringBuilder sb = new StringBuilder("\r\033[34m");
-        if (message.getSender().pseudo.equals(distantUser)) {
+        if (distantUser != null && distantUser.ip.equals(message.getDistantIP())) {
             sb.append(message.getContent().getDate());
             sb.append(" : ");
             sb.append(message.getContent().getContent());
         } else {
             sb.append("\033[5m");
             sb.append("New message from ");
-            sb.append(message.getSender().pseudo);
+            sb.append(userManager.getUserByIp(message.getDistantIP()));
             sb.append("\033[25m");
         }
 
@@ -132,7 +131,7 @@ public class CLI implements UserObserver, SessionObserver, Runnable {
     private void listusers() {
         System.out.printf("%20s|%20s|%20s\n","Pseudo", "IP", "Public Key");
         System.out.println("--------------------|---------------------|--------------------");
-        User[] userDB = LANUserManager.getInstance().getUserDB();
+        User[] userDB = userManager.getUserDB();
         for (User user : userDB) {
             System.out.printf("%20s|%20s|%20s\n", user.pseudo, user.ip, user.publicKey.getAlgorithm());
         }
@@ -146,10 +145,8 @@ public class CLI implements UserObserver, SessionObserver, Runnable {
 
                 for (Message message : session.getMessages()) {
 
-                    User sender = message.getSender();
-
                     StringBuilder sb = new StringBuilder();
-                    if (sender.equals(userManager.getMyUser())) {
+                    if (message.isSent()) {
                         sb.append("\033[32m");
                     } else {
                         sb.append("\033[34m");
@@ -164,7 +161,7 @@ public class CLI implements UserObserver, SessionObserver, Runnable {
                 }
 
             mode = CLIMode.CHAT;
-            distantUser = pseudo;
+            distantUser = userManager.getUserByPseudo(pseudo);
 
         } catch (Exception e) {
             System.out.println(e.getMessage());
@@ -196,7 +193,7 @@ public class CLI implements UserObserver, SessionObserver, Runnable {
 
     private void send(String message) {
         try {
-            sessionManager.sendMessage(message, distantUser);
+            sessionManager.sendMessage(message, distantUser.pseudo);
         } catch (Exception e) {
             System.err.println("Failed to send message");
             e.printStackTrace();
@@ -244,7 +241,7 @@ public class CLI implements UserObserver, SessionObserver, Runnable {
             }
         }
 
-        sessionManager.start();
+        sessionManager.startListening();
     }
 
     private void disconnect() {
@@ -253,7 +250,8 @@ public class CLI implements UserObserver, SessionObserver, Runnable {
         } catch (Exception e) {
             e.printStackTrace();
         }
-        sessionManager.stop();
+
+        sessionManager.stopListening();
     }
 
     @Override
@@ -280,9 +278,24 @@ public class CLI implements UserObserver, SessionObserver, Runnable {
         disconnect();
     }
 
+    public static UserManager getUserManager() {
+        return userManager;
+    }
+
+    public static SessionManager getSessionManager() {
+        return sessionManager;
+    }
+
     public static void main(String[] args) throws SocketException, NoSuchProviderException, NoSuchAlgorithmException {
+
+        if (Arrays.asList(args).contains("--mock")) {
+            userManager = UserManagerFactory.getMockUserManager();
+            sessionManager = SessionManagerFactory.getMockSessionManager();
+        } else {
+            userManager = UserManagerFactory.getLanUserManager();
+            sessionManager = SessionManagerFactory.getSessionManager();
+        }
 
         new CLI().run();
     }
-
 }

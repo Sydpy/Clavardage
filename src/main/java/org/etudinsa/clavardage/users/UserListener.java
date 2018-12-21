@@ -20,9 +20,12 @@ class UserListener implements Runnable {
 
     private final DatagramSocket socket;
 
-    UserListener() throws SocketException {
+    private final LANUserManager userManager;
+
+    UserListener(LANUserManager um) throws SocketException {
         this.socket = new DatagramSocket(LISTENING_PORT);
         this.socket.setSoTimeout(2000);
+        this.userManager = um;
     }
 
     @Override
@@ -43,7 +46,7 @@ class UserListener implements Runnable {
 
                 UserMessage message = UserMessage.fromString(new String(data));
 
-                LANUserManager.getInstance().receivedMessageFrom(message, packet.getAddress());
+                userManager.receivedMessageFrom(message, packet.getAddress());
                 
             } catch (SocketTimeoutException ignored) {
             } catch (Exception e) {

@@ -1,17 +1,15 @@
 package org.etudinsa.clavardage.sessions;
 
-import java.net.InetAddress;
-import java.net.UnknownHostException;
-import java.util.ArrayList;
-import java.util.List;
-
-import org.bson.Document;
-import org.etudinsa.clavardage.users.LANUserManager;
-
 import com.mongodb.Block;
 import com.mongodb.MongoClient;
 import com.mongodb.client.MongoCollection;
 import com.mongodb.client.MongoDatabase;
+import org.bson.Document;
+
+import java.net.InetAddress;
+import java.net.UnknownHostException;
+import java.util.ArrayList;
+import java.util.List;
 
 public class MessageLinkDB {
 
@@ -23,8 +21,8 @@ public class MessageLinkDB {
 			Message msg;
 			try {
 				msg = new Message(document.getString("content"),
-						LANUserManager.getInstance().getUserByIp(InetAddress.getByName(document.getString("recipientIP"))),
-						LANUserManager.getInstance().getUserByIp(InetAddress.getByName(document.getString("senderIP"))),
+						InetAddress.getByName(document.getString("distantIP")),
+						document.getBoolean("sent"),
 						document.getDate("date"));
 				messages.add(msg);
 			} catch (UnknownHostException e) {
@@ -68,10 +66,9 @@ public class MessageLinkDB {
 		
 		Document doc;
 		for (Message msg : msgList) {
-			doc = new Document("sender",msg.getSender().pseudo)
-					.append("recipient", msg.getRecipient().pseudo)
-					.append("senderIP", msg.getSender().ip.getHostAddress())
-					.append("recipientIP", msg.getRecipient().ip.getHostAddress())
+			doc = new Document()
+					.append("sent", msg.isSent())
+					.append("distantIP", msg.getDistantIP().getHostAddress())
 					.append("content", msg.getContent().getContent())
 					.append("date", msg.getContent().getDate());
 

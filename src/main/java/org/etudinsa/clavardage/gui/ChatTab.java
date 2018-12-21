@@ -8,9 +8,9 @@ import javafx.scene.control.ListView;
 import javafx.scene.control.Tab;
 import javafx.scene.control.TextArea;
 import javafx.scene.input.MouseEvent;
+import org.etudinsa.clavardage.GUI;
 import org.etudinsa.clavardage.sessions.Message;
 import org.etudinsa.clavardage.sessions.Session;
-import org.etudinsa.clavardage.sessions.SessionManager;
 import org.etudinsa.clavardage.users.User;
 
 import java.net.URL;
@@ -33,7 +33,7 @@ public class ChatTab extends Tab implements Initializable {
         super(user.pseudo);
 
         this.user = user;
-        this.session = SessionManager.getInstance().getSessionByDistantUserPseudo(user.pseudo);
+        this.session = GUI.getSessionManager().getSessionByDistantUserPseudo(user.pseudo);
     }
 
     @Override
@@ -46,7 +46,7 @@ public class ChatTab extends Tab implements Initializable {
 
     public void sendMessage(MouseEvent mouseEvent) {
         try {
-            SessionManager.getInstance().sendMessage(messageTextArea.getText(), user.pseudo);
+            GUI.getSessionManager().sendMessage(messageTextArea.getText(), user.pseudo);
         } catch (Exception e) {
             e.printStackTrace();
         }

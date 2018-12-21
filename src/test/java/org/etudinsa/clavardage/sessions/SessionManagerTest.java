@@ -3,16 +3,16 @@
  */
 package org.etudinsa.clavardage.sessions;
 
-import static org.junit.Assert.*;
+import org.etudinsa.clavardage.users.MockUserManager;
+import org.junit.AfterClass;
+import org.junit.BeforeClass;
+import org.junit.Test;
 
 import java.security.KeyPairGenerator;
 import java.security.SecureRandom;
 import java.util.Date;
 
-import org.etudinsa.clavardage.users.LANUserManager;
-import org.junit.AfterClass;
-import org.junit.BeforeClass;
-import org.junit.Test;
+import static org.junit.Assert.*;
 
 /**
  *
@@ -21,7 +21,8 @@ public class SessionManagerTest {
 	
 	private static final String myPseudo = "Joker";
 	private static final String wrongPseudo = "Harley";
-	private SessionManager sessionManager = SessionManager.getInstance();
+	private static MockUserManager userManager;
+	private static MockSessionManager sessionManager;
 
 	/**
 	 * One user is created and added to the userDB
@@ -33,7 +34,9 @@ public class SessionManagerTest {
         SecureRandom rng = SecureRandom.getInstance("SHA1PRNG", "SUN");
         rng.setSeed(new Date().getTime());
         keyGenerator.initialize(1024, rng);
-        LANUserManager.getInstance().joinNetwork(myPseudo, keyGenerator.generateKeyPair());
+
+        userManager = new MockUserManager();
+        sessionManager = new MockSessionManager(userManager);
 	}
 
 	/**
@@ -42,7 +45,7 @@ public class SessionManagerTest {
 	@AfterClass
 	public static void tearDownAfterClass() throws Exception {
 		try {
-			LANUserManager.getInstance().leaveNetwork();
+			userManager.leaveNetwork();
 		} catch (Exception e) {
 			System.err.println(e.getMessage());
 		}

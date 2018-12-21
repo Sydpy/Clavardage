@@ -5,6 +5,7 @@ import javafx.fxml.FXMLLoader;
 import javafx.scene.control.Label;
 import javafx.scene.control.ListCell;
 import javafx.scene.layout.FlowPane;
+import org.etudinsa.clavardage.GUI;
 import org.etudinsa.clavardage.users.User;
 
 import java.io.IOException;

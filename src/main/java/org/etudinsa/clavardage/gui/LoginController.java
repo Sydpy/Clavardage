@@ -4,8 +4,9 @@ import javafx.fxml.FXML;
 import javafx.scene.control.TextField;
 import javafx.scene.input.MouseEvent;
 import javafx.scene.text.Text;
+import org.etudinsa.clavardage.GUI;
 import org.etudinsa.clavardage.sessions.SessionManager;
-import org.etudinsa.clavardage.users.LANUserManager;
+import org.etudinsa.clavardage.users.UserManager;
 
 import java.security.KeyPairGenerator;
 import java.security.NoSuchAlgorithmException;
@@ -17,8 +18,8 @@ public class LoginController {
 
     private KeyPairGenerator keyPairGenerator;
 
-    private LANUserManager userManager = LANUserManager.getInstance();
-    private SessionManager sessionManager = SessionManager.getInstance();
+    private UserManager userManager = GUI.getUserManager();
+    private SessionManager sessionManager = GUI.getSessionManager();
 
     public LoginController() throws NoSuchAlgorithmException, NoSuchProviderException {
         keyPairGenerator = KeyPairGenerator.getInstance("RSA");
@@ -42,7 +43,7 @@ public class LoginController {
             return;
         }
 
-        sessionManager.start();
+        sessionManager.startListening();
 
         GUI.getLoginStage().close();
         GUI.getHomeStage().show();

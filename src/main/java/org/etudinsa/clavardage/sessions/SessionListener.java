@@ -17,13 +17,15 @@ class SessionListener implements Runnable {
 	final static int LISTENING_PORT = 1707;
 	
 	private final ServerSocket ssocket;
+	private final SessionManagerImpl sessionManager;
 
-	SessionListener() throws IOException {
+	SessionListener(SessionManagerImpl sm) throws IOException {
 		this.ssocket = new ServerSocket(LISTENING_PORT);
+		this.sessionManager = sm;
 	}
 
 	/**
-	 * Listens on the port LISTENING_PORT and calls the SessionManager to process the messages received.
+	 * Listens on the port LISTENING_PORT and calls the SessionManagerImpl to process the messages received.
 	 */
 	public void run() {
 
@@ -35,7 +37,7 @@ class SessionListener implements Runnable {
 				ObjectInputStream objectInputStream = new ObjectInputStream(is);
 				SignedMessageContent sigMsgContent = (SignedMessageContent) objectInputStream.readObject();
 
-				SessionManager.getInstance().receivedMessageFrom(sigMsgContent, client.getInetAddress());
+				sessionManager.receivedMessageFrom(sigMsgContent, client.getInetAddress());
 
 				client.close();
 

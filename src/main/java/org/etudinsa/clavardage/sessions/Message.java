@@ -1,45 +1,43 @@
 package org.etudinsa.clavardage.sessions;
 
+import java.net.InetAddress;
 import java.util.Date;
-
-import org.etudinsa.clavardage.users.User;
 
 /**
  * Class to represent the messages exchanged between users.
  *
  */
 public class Message {
+
 	private MessageContent content;
-	private User sender;
-	private User recipient;
-	
-	public Message(MessageContent content, User destUser, User srcUser) {
+	private InetAddress distantIP;
+	private boolean sent;
+
+	public Message(MessageContent content, InetAddress distantIP, boolean sent) {
 		this.content = content;
-		this.recipient = destUser;
-		this.sender = srcUser;
+		this.distantIP = distantIP;
+		this.sent = sent;
 	}
-	
-	public Message(String content, User destUser, User srcUser, Date date) {
+
+	public Message(String content, InetAddress distantIP, boolean sent,  Date date) {
 		this.content = new MessageContent(content, date);
-		this.recipient = destUser;
-		this.sender = srcUser;
+		this.distantIP = distantIP;
+		this.sent = sent;
 	}
 
 	public MessageContent getContent() {
 		return content;
 	}
 
-	public User getSender() {
-		return sender;
+	public InetAddress getDistantIP() {
+		return distantIP;
 	}
 
-	public User getRecipient() {
-		return recipient;
+	public boolean isSent() {
+		return sent;
 	}
 
-	@Override
-	public String toString() {
-		return "sender: " + sender.toString() + " recipient: " + recipient.toString() + " msg: " + content.toString();
+	public boolean isReceived() {
+		return !sent;
 	}
-	
 }
