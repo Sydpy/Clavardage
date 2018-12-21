@@ -1,4 +1,4 @@
-package org.etudinsa.clavardage.ui.gui;
+package org.etudinsa.clavardage.gui;
 
 import javafx.fxml.FXMLLoader;
 import javafx.scene.Parent;
@@ -8,7 +8,7 @@ import org.etudinsa.clavardage.sessions.Message;
 import org.etudinsa.clavardage.sessions.SessionManager;
 import org.etudinsa.clavardage.sessions.SessionObserver;
 import org.etudinsa.clavardage.users.User;
-import org.etudinsa.clavardage.users.UserManager;
+import org.etudinsa.clavardage.users.LANUserManager;
 import org.etudinsa.clavardage.users.UserObserver;
 
 import java.io.IOException;
@@ -31,11 +31,11 @@ class HomeStage extends Stage implements SessionObserver, UserObserver {
         homeController = loader.getController();
 
         SessionManager.getInstance().registerSessionObserver(this);
-        UserManager.getInstance().registerUserObserver(this);
+        LANUserManager.getInstance().registerUserObserver(this);
     }
 
     public void refreshUserList() {
-        homeController.setUserDB(UserManager.getInstance().getUserDB());
+        homeController.setUserDB(LANUserManager.getInstance().getUserDB());
     }
 
     @Override
@@ -43,7 +43,7 @@ class HomeStage extends Stage implements SessionObserver, UserObserver {
         super.close();
 
         try {
-            UserManager.getInstance().leaveNetwork();
+            LANUserManager.getInstance().leaveNetwork();
             SessionManager.getInstance().stop();
         } catch (Exception e) {
             e.printStackTrace();

@@ -6,7 +6,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import org.bson.Document;
-import org.etudinsa.clavardage.users.UserManager;
+import org.etudinsa.clavardage.users.LANUserManager;
 
 import com.mongodb.Block;
 import com.mongodb.MongoClient;
@@ -23,8 +23,8 @@ public class MessageLinkDB {
 			Message msg;
 			try {
 				msg = new Message(document.getString("content"),
-						UserManager.getInstance().getUserByIp(InetAddress.getByName(document.getString("recipientIP"))),
-						UserManager.getInstance().getUserByIp(InetAddress.getByName(document.getString("senderIP"))),
+						LANUserManager.getInstance().getUserByIp(InetAddress.getByName(document.getString("recipientIP"))),
+						LANUserManager.getInstance().getUserByIp(InetAddress.getByName(document.getString("senderIP"))),
 						document.getDate("date"));
 				messages.add(msg);
 			} catch (UnknownHostException e) {

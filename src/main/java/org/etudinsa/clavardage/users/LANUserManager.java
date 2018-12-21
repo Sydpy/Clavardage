@@ -8,13 +8,13 @@ import java.net.*;
 import java.security.*;
 import java.util.*;
 
-public class UserManager {
+public class LANUserManager {
 
     private final static int USERDB_RETRIEVE_PORT = 9191;
 
-    private static UserManager instance = new UserManager();
+    private static LANUserManager instance = new LANUserManager();
 
-    public static UserManager getInstance() {
+    public static LANUserManager getInstance() {
         return instance;
     }
 
@@ -26,7 +26,7 @@ public class UserManager {
 
     private UserObserver userObserver;
 
-    private UserManager() {}
+    private LANUserManager() {}
 
     public void registerUserObserver(UserObserver uo) {
         this.userObserver = uo;

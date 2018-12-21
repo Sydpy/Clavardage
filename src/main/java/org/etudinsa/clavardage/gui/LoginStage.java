@@ -1,4 +1,4 @@
-package org.etudinsa.clavardage.ui.gui;
+package org.etudinsa.clavardage.gui;
 
 import javafx.fxml.FXMLLoader;
 import javafx.scene.Parent;

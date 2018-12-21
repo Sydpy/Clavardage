@@ -1,4 +1,4 @@
-package org.etudinsa.clavardage.ui.gui;
+package org.etudinsa.clavardage.gui;
 
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
@@ -13,7 +13,6 @@ import org.etudinsa.clavardage.users.User;
 import java.net.URL;
 import java.util.Arrays;
 import java.util.ResourceBundle;
-import java.util.function.Predicate;
 
 public class HomeController implements Initializable {
 

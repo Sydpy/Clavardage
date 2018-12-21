@@ -9,7 +9,7 @@ import java.security.KeyPairGenerator;
 import java.security.SecureRandom;
 import java.util.Date;
 
-import org.etudinsa.clavardage.users.UserManager;
+import org.etudinsa.clavardage.users.LANUserManager;
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
 import org.junit.Test;
@@ -33,7 +33,7 @@ public class SessionManagerTest {
         SecureRandom rng = SecureRandom.getInstance("SHA1PRNG", "SUN");
         rng.setSeed(new Date().getTime());
         keyGenerator.initialize(1024, rng);
-        UserManager.getInstance().joinNetwork(myPseudo, keyGenerator.generateKeyPair());
+        LANUserManager.getInstance().joinNetwork(myPseudo, keyGenerator.generateKeyPair());
 	}
 
 	/**
@@ -42,7 +42,7 @@ public class SessionManagerTest {
 	@AfterClass
 	public static void tearDownAfterClass() throws Exception {
 		try {
-			UserManager.getInstance().leaveNetwork();
+			LANUserManager.getInstance().leaveNetwork();
 		} catch (Exception e) {
 			System.err.println(e.getMessage());
 		}

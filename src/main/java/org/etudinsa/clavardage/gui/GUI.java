@@ -1,4 +1,4 @@
-package org.etudinsa.clavardage.ui.gui;
+package org.etudinsa.clavardage.gui;
 
 import javafx.application.Application;
 import javafx.scene.image.Image;

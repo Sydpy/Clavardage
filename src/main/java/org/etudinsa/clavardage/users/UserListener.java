@@ -2,7 +2,6 @@ package org.etudinsa.clavardage.users;
 
 import java.net.*;
 import java.util.Arrays;
-import java.util.Observable;
 
 class UserListener implements Runnable {
 
@@ -44,7 +43,7 @@ class UserListener implements Runnable {
 
                 UserMessage message = UserMessage.fromString(new String(data));
 
-                UserManager.getInstance().receivedMessageFrom(message, packet.getAddress());
+                LANUserManager.getInstance().receivedMessageFrom(message, packet.getAddress());
                 
             } catch (SocketTimeoutException ignored) {
             } catch (Exception e) {

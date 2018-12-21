@@ -15,7 +15,7 @@ public class UserManagerTest {
 	
 	private static final String myPseudo = "Harley";
 	private static KeyPair myKeyPair;
-	private static UserManager userManager = UserManager.getInstance();
+	private static LANUserManager userManager = LANUserManager.getInstance();
 
 	@BeforeClass
 	public static void setUpBeforeClass() throws Exception {

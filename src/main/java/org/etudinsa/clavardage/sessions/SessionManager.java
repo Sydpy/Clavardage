@@ -2,7 +2,7 @@ package org.etudinsa.clavardage.sessions;
 
 import org.etudinsa.clavardage.users.MyUser;
 import org.etudinsa.clavardage.users.User;
-import org.etudinsa.clavardage.users.UserManager;
+import org.etudinsa.clavardage.users.LANUserManager;
 
 import java.io.IOException;
 import java.io.ObjectOutputStream;
@@ -76,7 +76,7 @@ public class SessionManager {
 	 * 							if a chat with this user is already open
 	 */
 	public Session openSession(String pseudo) throws Exception {
-		User distantUser = UserManager.getInstance().getUserByPseudo(pseudo);
+		User distantUser = LANUserManager.getInstance().getUserByPseudo(pseudo);
 		if (distantUser == null) {
 			throw new Exception("No user with this pseudo: " + pseudo);
 		}
@@ -96,7 +96,7 @@ public class SessionManager {
 	 */
 	public void closeSession(String pseudo) throws Exception {
 		Session session;
-		User dUser = UserManager.getInstance().getUserByPseudo(pseudo);
+		User dUser = LANUserManager.getInstance().getUserByPseudo(pseudo);
 		if (dUser == null) {
 			throw new Exception("No user with this pseudo: " + pseudo);
 		}
@@ -122,8 +122,8 @@ public class SessionManager {
 	 * 							if the user with the given pseudo is not active
 	 */
 	public void sendMessage(String content, String pseudo) throws Exception {
-		User receiver = UserManager.getInstance().getUserByPseudo(pseudo);
-		MyUser myUser = UserManager.getInstance().getMyUser();
+		User receiver = LANUserManager.getInstance().getUserByPseudo(pseudo);
+		MyUser myUser = LANUserManager.getInstance().getMyUser();
 		if (myUser == null) {
 			throw new Exception("You need to create a user!!");
 		}
@@ -159,7 +159,7 @@ public class SessionManager {
 	 * @throws Exception thrown if the user with the given pseudo is not active
 	 */
 	public Session getSessionByDistantUserPseudo(String pseudo) throws Exception {
-		User dUser = UserManager.getInstance().getUserByPseudo(pseudo);
+		User dUser = LANUserManager.getInstance().getUserByPseudo(pseudo);
 		if (dUser == null) {
 			throw new Exception("No user with this pseudo: " + pseudo);
 		}
@@ -180,7 +180,7 @@ public class SessionManager {
 	public void receivedMessageFrom(SignedMessageContent sigMsgContent, InetAddress addr)
 			throws Exception {
 
-		User sender = UserManager.getInstance().getUserByIp(addr);
+		User sender = LANUserManager.getInstance().getUserByIp(addr);
 
 		// Verify valid user
 		if (sender == null) return;
@@ -191,7 +191,7 @@ public class SessionManager {
 
 		Session session = getSessionByDistantUserPseudo(sender.pseudo);
 
-		User myUser = UserManager.getInstance().getMyUser();
+		User myUser = LANUserManager.getInstance().getMyUser();
 
 		Message message = new Message(sigMsgContent.content, myUser, sender);
 		session.addMessage(message);

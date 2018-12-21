@@ -1,11 +1,11 @@
-package org.etudinsa.clavardage.ui;
+package org.etudinsa.clavardage;
 
 import org.etudinsa.clavardage.sessions.Message;
 import org.etudinsa.clavardage.sessions.Session;
 import org.etudinsa.clavardage.sessions.SessionManager;
 import org.etudinsa.clavardage.sessions.SessionObserver;
 import org.etudinsa.clavardage.users.User;
-import org.etudinsa.clavardage.users.UserManager;
+import org.etudinsa.clavardage.users.LANUserManager;
 import org.etudinsa.clavardage.users.UserObserver;
 
 import java.net.SocketException;
@@ -41,7 +41,7 @@ public class CLI implements UserObserver, SessionObserver, Runnable {
     private CLIMode mode = CLIMode.HOME;
     private String distantUser = null;
 
-    private UserManager userManager = UserManager.getInstance();
+    private LANUserManager userManager = LANUserManager.getInstance();
     private SessionManager sessionManager = SessionManager.getInstance();
 
     private KeyPairGenerator keyGenerator;
@@ -132,7 +132,7 @@ public class CLI implements UserObserver, SessionObserver, Runnable {
     private void listusers() {
         System.out.printf("%20s|%20s|%20s\n","Pseudo", "IP", "Public Key");
         System.out.println("--------------------|---------------------|--------------------");
-        User[] userDB = UserManager.getInstance().getUserDB();
+        User[] userDB = LANUserManager.getInstance().getUserDB();
         for (User user : userDB) {
             System.out.printf("%20s|%20s|%20s\n", user.pseudo, user.ip, user.publicKey.getAlgorithm());
         }
