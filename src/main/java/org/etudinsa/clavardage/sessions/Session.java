@@ -50,10 +50,6 @@ public class Session {
 		for (Message m: historic) {
 			this.messages.add(m);
 		}
-		System.out.println("Historic retreived");
-		for (Message msg : this.messages) {
-			System.out.println(msg.toString());
-		}
 	}
 
 	/**

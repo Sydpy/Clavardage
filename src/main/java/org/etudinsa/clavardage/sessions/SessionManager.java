@@ -11,6 +11,7 @@ import java.net.InetAddress;
 import java.net.Socket;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.logging.Level;
 
 /**
  * 
@@ -46,6 +47,7 @@ public class SessionManager {
 	 */
 	public void start() {
 		try {
+			java.util.logging.Logger.getLogger("org.mongodb.driver").setLevel(Level.SEVERE);
 			sessionListener = new SessionListener();
 
 			Thread sessionListenerThread = new Thread(sessionListener);
