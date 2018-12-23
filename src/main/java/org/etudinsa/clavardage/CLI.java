@@ -36,9 +36,6 @@ public class CLI implements UserObserver, SessionObserver, Runnable {
         }
     }
 
-    private static UserManager userManager;
-    private static SessionManager sessionManager;
-
     private CLIMode mode = CLIMode.HOME;
     private User distantUser = null;
 
@@ -278,23 +275,21 @@ public class CLI implements UserObserver, SessionObserver, Runnable {
         disconnect();
     }
 
-    public static UserManager getUserManager() {
-        return userManager;
-    }
-
-    public static SessionManager getSessionManager() {
-        return sessionManager;
-    }
+    private static UserManager userManager;
+    private static SessionManager sessionManager;
 
     public static void main(String[] args) throws SocketException, NoSuchProviderException, NoSuchAlgorithmException {
 
+        ManagerFactory managerFactory;
+
         if (Arrays.asList(args).contains("--mock")) {
-            userManager = UserManagerFactory.getMockUserManager();
-            sessionManager = SessionManagerFactory.getMockSessionManager();
+            managerFactory = new ManagerFactory(true);
         } else {
-            userManager = UserManagerFactory.getLanUserManager();
-            sessionManager = SessionManagerFactory.getSessionManager();
+            managerFactory = new ManagerFactory(false);
         }
+
+        userManager = managerFactory.getUserManager();
+        sessionManager = managerFactory.getSessionManager();
 
         new CLI().run();
     }

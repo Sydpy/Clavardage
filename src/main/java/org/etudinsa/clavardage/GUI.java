@@ -19,27 +19,31 @@ public class GUI extends Application {
     private static LoginStage loginStage;
     private static HomeStage homeStage;
 
-    public static void main(String[] args) throws IOException {
+    public static void main(String[] args) {
+
+        ManagerFactory managerFactory;
 
         if (Arrays.asList(args).contains("--mock")) {
-            userManager = UserManagerFactory.getMockUserManager();
-            sessionManager = SessionManagerFactory.getMockSessionManager();
+            managerFactory = new ManagerFactory(true);
         } else {
-            userManager = UserManagerFactory.getLanUserManager();
-            sessionManager = SessionManagerFactory.getSessionManager();
+            managerFactory = new ManagerFactory(false);
         }
 
-        loginStage = new LoginStage();
-        homeStage = new HomeStage();
+        userManager = managerFactory.getUserManager();
+        sessionManager = managerFactory.getSessionManager();
 
-        loginStage.getIcons().add(new Image("https://cdn3.iconfinder.com/data/icons/badger-s-christmas/300/mail-512.png"));
-        homeStage.getIcons().add(new Image("https://cdn3.iconfinder.com/data/icons/badger-s-christmas/300/mail-512.png"));
 
         launch(args);
     }
 
     @Override
     public void start(Stage primaryStage) throws IOException {
+
+        loginStage = new LoginStage();
+        homeStage = new HomeStage();
+
+        loginStage.getIcons().add(new Image("https://cdn3.iconfinder.com/data/icons/badger-s-christmas/300/mail-512.png"));
+        homeStage.getIcons().add(new Image("https://cdn3.iconfinder.com/data/icons/badger-s-christmas/300/mail-512.png"));
 
         loginStage.show();
     }
