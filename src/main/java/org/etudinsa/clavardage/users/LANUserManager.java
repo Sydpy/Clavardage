@@ -1,12 +1,13 @@
 package org.etudinsa.clavardage.users;
 
-import sun.security.rsa.RSAPublicKeyImpl;
-
 import java.io.*;
 import java.net.*;
-import java.security.InvalidKeyException;
+import java.security.KeyFactory;
 import java.security.KeyPair;
+import java.security.NoSuchAlgorithmException;
 import java.security.PublicKey;
+import java.security.spec.InvalidKeySpecException;
+import java.security.spec.X509EncodedKeySpec;
 import java.util.ArrayList;
 import java.util.Base64;
 import java.util.List;
@@ -243,7 +244,10 @@ public class LANUserManager extends UserManager {
                 try {
 
                     String pseudo = message.content[0];
-                    PublicKey publicKey = new RSAPublicKeyImpl(Base64.getMimeDecoder().decode(message.content[1]));
+
+                    byte[] keyBytes = Base64.getMimeDecoder().decode(message.content[1]);
+                    X509EncodedKeySpec keySpec = new X509EncodedKeySpec(keyBytes);
+                    PublicKey publicKey = KeyFactory.getInstance("RSA").generatePublic(keySpec);
 
                     User newUser = new User(pseudo, address, publicKey);
 
@@ -253,7 +257,7 @@ public class LANUserManager extends UserManager {
 
                     notifyNewUser(newUser);
 
-                } catch (InvalidKeyException e) {
+                } catch (NoSuchAlgorithmException | InvalidKeySpecException e) {
                     e.printStackTrace();
                 }
 

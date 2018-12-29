@@ -1,11 +1,12 @@
 package org.etudinsa.clavardage.users;
 
-import sun.security.rsa.RSAPublicKeyImpl;
-
 import java.math.BigInteger;
 import java.net.InetAddress;
+import java.security.KeyFactory;
 import java.security.KeyPair;
 import java.security.PublicKey;
+import java.security.spec.RSAPrivateKeySpec;
+import java.security.spec.RSAPublicKeySpec;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Random;
@@ -39,9 +40,9 @@ public class MockUserManager extends UserManager {
 
         BigInteger mod = BigInteger.probablePrime(512, random);
         BigInteger exp = BigInteger.probablePrime(256, random);
-        PublicKey pkey = new RSAPublicKeyImpl(mod, exp);
+        PublicKey pKey = KeyFactory.getInstance("RSA").generatePublic(new RSAPublicKeySpec(mod, exp));
 
-        User user = new User(pseudo, addr, pkey);
+        User user = new User(pseudo, addr, pKey);
         userDB.add(user);
 
         if (connected) notifyNewUser(user);
