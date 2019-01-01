@@ -278,7 +278,7 @@ public class CLI implements UserObserver, SessionObserver, Runnable {
     private static UserManager userManager;
     private static SessionManager sessionManager;
 
-    public static void main(String[] args) throws SocketException, NoSuchProviderException, NoSuchAlgorithmException {
+    public static void main(String[] args) throws NoSuchProviderException, NoSuchAlgorithmException {
 
         ManagerFactory managerFactory;
 

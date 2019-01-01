@@ -8,16 +8,12 @@ import org.etudinsa.clavardage.gui.LoginStage;
 import org.etudinsa.clavardage.sessions.SessionManager;
 import org.etudinsa.clavardage.users.UserManager;
 
-import java.io.IOException;
 import java.util.Arrays;
 
 public class GUI extends Application {
 
     private static UserManager userManager;
     private static SessionManager sessionManager;
-
-    private static LoginStage loginStage;
-    private static HomeStage homeStage;
 
     public static void main(String[] args) {
 
@@ -32,27 +28,26 @@ public class GUI extends Application {
         userManager = managerFactory.getUserManager();
         sessionManager = managerFactory.getSessionManager();
 
-
         launch(args);
     }
 
     @Override
-    public void start(Stage primaryStage) throws IOException {
+    public void start(Stage primaryStage) throws Exception {
 
-        loginStage = new LoginStage();
-        homeStage = new HomeStage();
+        LoginStage loginStage = new LoginStage();
+        HomeStage homeStage = new HomeStage();
 
         loginStage.getIcons().add(new Image("https://cdn3.iconfinder.com/data/icons/badger-s-christmas/300/mail-512.png"));
         homeStage.getIcons().add(new Image("https://cdn3.iconfinder.com/data/icons/badger-s-christmas/300/mail-512.png"));
 
-        loginStage.show();
-    }
+        loginStage.showAndWait();
 
-    public static LoginStage getLoginStage() {
-        return loginStage;
-    }
-    public static HomeStage getHomeStage() {
-        return homeStage;
+        // Check if the login was successful
+        if (userManager.isConnected()) {
+            homeStage.show();
+        } else {
+            System.exit(1);
+        }
     }
 
     public static UserManager getUserManager() {

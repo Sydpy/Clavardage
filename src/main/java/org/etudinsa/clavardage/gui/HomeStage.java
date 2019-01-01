@@ -1,71 +1,44 @@
 package org.etudinsa.clavardage.gui;
 
+import javafx.collections.FXCollections;
+import javafx.collections.ObservableList;
+import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
 import javafx.scene.Parent;
 import javafx.scene.Scene;
+import javafx.scene.control.ListView;
+import javafx.scene.control.TabPane;
+import javafx.stage.Modality;
 import javafx.stage.Stage;
+import javafx.stage.StageStyle;
 import org.etudinsa.clavardage.GUI;
-import org.etudinsa.clavardage.sessions.Message;
-import org.etudinsa.clavardage.sessions.SessionObserver;
 import org.etudinsa.clavardage.users.User;
-import org.etudinsa.clavardage.users.UserObserver;
 
 import java.io.IOException;
 
-public class HomeStage extends Stage implements SessionObserver, UserObserver {
+public class HomeStage extends Stage {
 
-    final HomeController homeController;
+    @FXML
+    public ListView userListView;
+
+    @FXML
+    public TabPane tabPane;
+
+    private ObservableList<User> userList = FXCollections.observableArrayList();
 
     public HomeStage() throws IOException {
+        super();
+        initModality(Modality.NONE);
+        initStyle(StageStyle.DECORATED);
 
+        // Load FXML and set scene
         FXMLLoader loader = new FXMLLoader(getClass().getClassLoader().getResource("fxml/home.fxml"));
+        loader.setController(this);
 
-        Parent root = loader.load();
-
-        Scene scene = new Scene(root, 300, 275);
-
-        setTitle("Home");
+        Scene scene = new Scene((Parent) loader.load());
         setScene(scene);
 
-        homeController = loader.getController();
-
-        GUI.getSessionManager().registerSessionObserver(this);
-        GUI.getUserManager().registerUserObserver(this);
-    }
-
-    public void refreshUserList() {
-        homeController.setUserDB(GUI.getUserManager().getUserDB());
-    }
-
-    @Override
-    public void close() {
-        super.close();
-
-        try {
-            GUI.getUserManager().leaveNetwork();
-            GUI.getSessionManager().stopListening();
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-    }
-
-    @Override
-    public void messageSent(Message message) {
-        //TODO
-    }
-
-    @Override
-    public void messageReceived(Message message) {
-        //TODO
-    }
-
-    @Override
-    public void newUser(User newUser) {
-        //TODO
-    }
-
-    @Override
-    public void userLeaving(User userLeaving) {
-        //TODO
+        userListView.setItems(userList);
+        userListView.setCellFactory(userListView -> new UserCell());
     }
 }
