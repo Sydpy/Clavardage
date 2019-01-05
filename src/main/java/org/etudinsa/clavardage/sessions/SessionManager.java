@@ -25,10 +25,12 @@ public abstract class SessionManager {
     }
 
     protected void notifyMessageReceived(Message message) {
-        this.sessionObserver.messageReceived(message);
+        if (sessionObserver != null)
+            sessionObserver.messageReceived(message);
     }
     protected void notifyMessageSent(Message message) {
-        this.sessionObserver.messageSent(message);
+        if (sessionObserver != null)
+            sessionObserver.messageSent(message);
     }
 
 
