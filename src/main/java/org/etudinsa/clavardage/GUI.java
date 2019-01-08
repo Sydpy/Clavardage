@@ -15,6 +15,8 @@ public class GUI extends Application {
     private static UserManager userManager;
     private static SessionManager sessionManager;
 
+    private static HomeStage homeStage;
+
     public static void main(String[] args) {
 
         ManagerFactory managerFactory;
@@ -35,7 +37,7 @@ public class GUI extends Application {
     public void start(Stage primaryStage) throws Exception {
 
         LoginStage loginStage = new LoginStage();
-        HomeStage homeStage = new HomeStage();
+        homeStage = new HomeStage();
 
         loginStage.getIcons().add(new Image("https://cdn3.iconfinder.com/data/icons/badger-s-christmas/300/mail-512.png"));
         homeStage.getIcons().add(new Image("https://cdn3.iconfinder.com/data/icons/badger-s-christmas/300/mail-512.png"));
@@ -45,6 +47,7 @@ public class GUI extends Application {
         // Check if the login was successful
         if (userManager.isConnected()) {
             homeStage.show();
+            homeStage.refreshUserList();
         } else {
             System.exit(1);
         }
@@ -55,5 +58,9 @@ public class GUI extends Application {
     }
     public static SessionManager getSessionManager() {
         return sessionManager;
+    }
+
+    public static HomeStage getHomeStage() {
+        return homeStage;
     }
 }

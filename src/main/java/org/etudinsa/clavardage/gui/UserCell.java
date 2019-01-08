@@ -57,7 +57,13 @@ public class UserCell extends ListCell<User> {
         super.updateSelected(selected);
 
         if(user != null && selected) {
-//            GUI.getHomeStage().homeController.openChat(user);
+
+            try {
+                GUI.getHomeStage().selectChat(user);
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+
         }
     }
 
