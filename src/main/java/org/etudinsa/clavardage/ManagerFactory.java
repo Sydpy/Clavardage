@@ -4,6 +4,7 @@ import org.etudinsa.clavardage.sessions.MockSessionManager;
 import org.etudinsa.clavardage.sessions.SessionManager;
 import org.etudinsa.clavardage.sessions.SessionManagerImpl;
 import org.etudinsa.clavardage.users.LANUserManager;
+import org.etudinsa.clavardage.users.ServerUserManager;
 import org.etudinsa.clavardage.users.MockUserManager;
 import org.etudinsa.clavardage.users.UserManager;
 
@@ -65,8 +66,7 @@ class ManagerFactory {
                     userManager = new MockUserManager();
                     break;
                 case SERVER:
-                    //TODO
-                    userManager = new MockUserManager();
+                    userManager = new ServerUserManager(serverAddress);
                     break;
             }
         }

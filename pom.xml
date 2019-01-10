@@ -46,4 +46,5 @@
 
     
 
+	<packaging>war</packaging>
 </project>
