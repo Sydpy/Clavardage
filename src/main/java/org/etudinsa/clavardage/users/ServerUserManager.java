@@ -23,6 +23,8 @@ import java.security.spec.X509EncodedKeySpec;
 import java.util.ArrayList;
 import java.util.Base64;
 import java.util.List;
+import java.util.Timer;
+import java.util.TimerTask;
 
 public class ServerUserManager extends UserManager {
 
@@ -30,15 +32,30 @@ public class ServerUserManager extends UserManager {
 	private boolean connected = false;
 	private List<User> userDB = new ArrayList<>();
     private MyUser myUser;
+    private Timer timer;
 	String charset = StandardCharsets.UTF_8.name();
     
 	
 	public ServerUserManager(InetAddress ip) {
 		this.serverUrl = "http://" + ip.getHostAddress() + ":8080/ServerClavardage/clavardage";
+		timer = new Timer();
+		timer.scheduleAtFixedRate(new TimerTask() {
+
+			@Override
+			public void run() {
+				ArrayList<User> db = retrieveUserDB();
+				synchronized (userDB) {
+					if (!userDB.equals(db)) {
+						userDB = db;
+						notifyUpdatedUserList();
+					}
+				}				
+			}
+
+		}, 0, 60 * 1000);
 	}
 
-	private ArrayList<User> retrieveUserDB() {
-
+	synchronized private ArrayList<User> retrieveUserDB() {
 		ArrayList<User> userDB = new ArrayList<>();
 
 		URL url;
@@ -85,11 +102,11 @@ public class ServerUserManager extends UserManager {
 			e1.printStackTrace();
 		}
 
-		System.out.println("get DB");
-
-		for (User ur:userDB) {
-			System.out.println(ur.toString());
-		}
+//		System.out.println("get DB");
+//
+//		for (User ur:userDB) {
+//			System.out.println(ur.toString());
+//		}
 
 		return userDB;
 
@@ -133,16 +150,17 @@ public class ServerUserManager extends UserManager {
 		}
 		in.close();
 		con.disconnect();
-		System.out.println("Subscribe message");
-		System.out.println(contentB.toString());
+//		System.out.println("Subscribe message");
+//		System.out.println(contentB.toString());
         
         connected = true;
-        notifyNewUser(myUser);
 		}
 
 		@Override
 		public void leaveNetwork() throws Exception {
 			if (!connected) throw new Exception("Already disconnected");
+			
+			timer.cancel();
 			
 			URL url = new URL(serverUrl + "?" + String.format("request=%s", URLEncoder.encode("unsubscribe", charset)));
 			HttpURLConnection con = (HttpURLConnection) url.openConnection();
@@ -178,28 +196,31 @@ public class ServerUserManager extends UserManager {
 			}
 			in.close();
 			con.disconnect();
-			System.out.println("unsubcribe message");
-			System.out.println(contentB.toString());
+//			System.out.println("unsubcribe message");
+//			System.out.println(contentB.toString());
 			
 			connected = false;
-			notifyUserLeaving(myUser);
 		}
 
 		@Override
 		public User getUserByIp(InetAddress ip) {
-			userDB = retrieveUserDB();
-	        for (User user : userDB) {
-	            if (user.ip.equals(ip)) return user;
-	        }
+			synchronized (userDB) {
+				userDB = retrieveUserDB();
+		        for (User user : userDB) {
+		            if (user.ip.equals(ip)) return user;
+		        }
+			}
 	        return null;
 		}
 
 		@Override
 		public User getUserByPseudo(String pseudo) {
-			userDB = retrieveUserDB();
-	        for (User user : userDB) {
-	            if (user.pseudo.equals(pseudo)) return user;
-	        }
+			synchronized (userDB) {
+				userDB = retrieveUserDB();
+		        for (User user : userDB) {
+		            if (user.pseudo.equals(pseudo)) return user;
+		        }
+			}
 	        return null;
 		}
 
@@ -210,7 +231,10 @@ public class ServerUserManager extends UserManager {
 
 		@Override
 		public User[] getUserDB() {
-			return userDB.toArray(new User[userDB.size()]);
+			synchronized (userDB) {
+				userDB = retrieveUserDB();
+				return userDB.toArray(new User[userDB.size()]);
+			}
 		}
 
 		@Override

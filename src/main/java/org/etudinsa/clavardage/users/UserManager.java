@@ -19,6 +19,10 @@ public abstract class UserManager {
         if (userObserver != null)
             userObserver.userLeaving(user);
     }
+    protected void notifyUpdatedUserList() {
+        if (userObserver != null)
+            userObserver.updatedUserList();
+    }
 
     public abstract void joinNetwork(String pseudo, KeyPair keyPair) throws Exception;
     public abstract void leaveNetwork() throws Exception;

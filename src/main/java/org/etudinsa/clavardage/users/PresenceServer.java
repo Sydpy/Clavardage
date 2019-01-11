@@ -58,13 +58,11 @@ public class PresenceServer extends HttpServlet {
 	}
 
 	public void doPost(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
-		System.out.println("post received1");
 		String req = request.getParameter("request");
-		System.out.println("post received2");
 
 		if (req.equals("subscribe")) {
 			String body = request.getReader().lines().collect(Collectors.joining());
-			System.out.println(body);
+			System.out.println("body post: " + body);
 
 			response.setContentType("text/plain");
 			response.setCharacterEncoding("UTF-8");
@@ -112,7 +110,7 @@ public class PresenceServer extends HttpServlet {
 			response.setContentType("text/plain");
 			response.setCharacterEncoding("UTF-8");
 			String body = request.getReader().lines().collect(Collectors.joining());
-			System.out.println(body);
+			System.out.println("body delete: " + body);
 
 			String[] splitted = body.split("::", 3);
 			InetAddress ip = InetAddress.getByName(splitted[1].trim());
@@ -129,7 +127,7 @@ public class PresenceServer extends HttpServlet {
 					PrintWriter out = response.getWriter();
 					out.println("User is removed from the database");
 				} else {
-					response.setStatus(HttpServletResponse.SC_FORBIDDEN);
+					response.setStatus(HttpServletResponse.SC_NOT_FOUND);
 					PrintWriter out = response.getWriter();
 					out.println("User was not connected");
 				}
@@ -159,6 +157,7 @@ public class PresenceServer extends HttpServlet {
 					publicKey = KeyFactory.getInstance("RSA").generatePublic(keySpec);
 					User user = new User(ps, ip, publicKey);
 					if (myDb.contains(user)) {
+						response.setStatus(HttpServletResponse.SC_FORBIDDEN);
 						PrintWriter out = response.getWriter();
 						out.println("You already have this pseudo!");
 					} else {
@@ -174,6 +173,7 @@ public class PresenceServer extends HttpServlet {
 							}
 						}
 						if (!ipFound) {
+							response.setStatus(HttpServletResponse.SC_NOT_FOUND);
 							PrintWriter out = response.getWriter();
 							out.println("User was not in the database");
 						}

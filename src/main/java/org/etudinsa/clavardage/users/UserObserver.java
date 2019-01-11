@@ -4,4 +4,6 @@ public interface UserObserver {
     void newUser(User newUser);
 
     void userLeaving(User userLeaving);
+    
+    void updatedUserList();
 }

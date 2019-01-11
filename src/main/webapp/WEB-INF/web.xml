@@ -4,7 +4,7 @@
 	
 	<servlet>
 	<servlet-name>PresenceServer</servlet-name>
-	<servlet-class>org.etudinsa.clavardage.users</servlet-class>
+	<servlet-class>org.etudinsa.clavardage.users.PresenceServer</servlet-class>
 	</servlet>
 	
 	<servlet-mapping>

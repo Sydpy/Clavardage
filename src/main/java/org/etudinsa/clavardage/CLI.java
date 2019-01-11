@@ -5,7 +5,9 @@ import org.etudinsa.clavardage.users.User;
 import org.etudinsa.clavardage.users.UserManager;
 import org.etudinsa.clavardage.users.UserObserver;
 
+import java.net.InetAddress;
 import java.net.SocketException;
+import java.net.UnknownHostException;
 import java.security.*;
 import java.util.Arrays;
 import java.util.Date;
@@ -278,14 +280,15 @@ public class CLI implements UserObserver, SessionObserver, Runnable {
     private static UserManager userManager;
     private static SessionManager sessionManager;
 
-    public static void main(String[] args) throws NoSuchProviderException, NoSuchAlgorithmException {
+    public static void main(String[] args) throws NoSuchProviderException, NoSuchAlgorithmException, UnknownHostException {
 
         ManagerFactory managerFactory;
 
         if (Arrays.asList(args).contains("--mock")) {
             managerFactory = new ManagerFactory(true);
         } else {
-            managerFactory = new ManagerFactory(false);
+//            managerFactory = new ManagerFactory(false);
+        	managerFactory = new ManagerFactory(InetAddress.getLocalHost());
         }
 
         userManager = managerFactory.getUserManager();
@@ -293,4 +296,8 @@ public class CLI implements UserObserver, SessionObserver, Runnable {
 
         new CLI().run();
     }
+
+	@Override
+	public void updatedUserList() {		
+	}
 }

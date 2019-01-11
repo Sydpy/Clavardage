@@ -111,4 +111,9 @@ public class HomeStage extends Stage implements UserObserver, SessionObserver {
     public void userLeaving(User userLeaving) {
         refreshUserList();
     }
+    
+    @Override
+    public void updatedUserList() {
+    	refreshUserList();
+    }
 }
