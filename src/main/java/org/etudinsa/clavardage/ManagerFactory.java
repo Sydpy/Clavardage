@@ -46,8 +46,7 @@ class ManagerFactory {
                     sessionManager = new MockSessionManager(getUserManager());
                     break;
                 case SERVER:
-                    //TODO
-                    sessionManager = new MockSessionManager(getUserManager());
+                    sessionManager = new SessionManagerImpl(getUserManager());
                     break;
             }
         }

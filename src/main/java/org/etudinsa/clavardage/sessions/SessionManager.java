@@ -95,7 +95,7 @@ public abstract class SessionManager {
             throw new Exception("No user with this pseudo: " + pseudo);
         }
         for (int i = 0; i < this.sessions.size(); i++) {
-            if (this.sessions.get(i).getDistantUser() == dUser) {
+            if (this.sessions.get(i).getDistantUser().equals(dUser)) {
                 return this.sessions.get(i);
             }
         }

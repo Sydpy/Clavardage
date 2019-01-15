@@ -1,26 +1,21 @@
 package org.etudinsa.clavardage.users;
-import java.io.IOException;
-import java.io.ObjectInputStream;
-import java.io.ObjectOutputStream;
-import java.io.PrintWriter;
-import java.net.InetAddress;
-import java.net.UnknownHostException;
-import java.nio.charset.StandardCharsets;
-import java.util.ArrayList;
-import java.util.Date;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Base64;
-import java.util.stream.Collectors;
 
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
-
-import java.security.*;
+import java.io.IOException;
+import java.io.PrintWriter;
+import java.net.InetAddress;
+import java.security.KeyFactory;
+import java.security.NoSuchAlgorithmException;
+import java.security.PublicKey;
 import java.security.spec.InvalidKeySpecException;
 import java.security.spec.X509EncodedKeySpec;
+import java.util.ArrayList;
+import java.util.Base64;
+import java.util.List;
+import java.util.stream.Collectors;
 
 public class PresenceServer extends HttpServlet {
 
@@ -67,10 +62,13 @@ public class PresenceServer extends HttpServlet {
 			response.setContentType("text/plain");
 			response.setCharacterEncoding("UTF-8");
 
-			String[] splitted = body.split("::", 3);
-			InetAddress ip = InetAddress.getByName(splitted[1].trim());
+			String[] splitted = body.split("::", 2);
+			InetAddress ip = InetAddress.getByName(request.getRemoteAddr());
+			if (ip.equals(InetAddress.getLocalHost())) {
+			    ip = InetAddress.getByName("192.168.1.16");
+            }
 			String ps = splitted[0].trim();
-			byte[] keyBytes = Base64.getDecoder().decode(splitted[2].trim());
+			byte[] keyBytes = Base64.getDecoder().decode(splitted[1].trim());
 			X509EncodedKeySpec keySpec = new X509EncodedKeySpec(keyBytes);
 			PublicKey publicKey;
 			try {
@@ -112,10 +110,12 @@ public class PresenceServer extends HttpServlet {
 			String body = request.getReader().lines().collect(Collectors.joining());
 			System.out.println("body delete: " + body);
 
-			String[] splitted = body.split("::", 3);
-			InetAddress ip = InetAddress.getByName(splitted[1].trim());
-			String ps = splitted[0].trim();
-			byte[] keyBytes = Base64.getDecoder().decode(splitted[2].trim());
+			String[] splitted = body.split("::", 2);
+            InetAddress ip = InetAddress.getByName(request.getRemoteAddr());
+            if (ip.equals(InetAddress.getLocalHost())) {
+                ip = InetAddress.getByName("192.168.1.16");
+            }			String ps = splitted[0].trim();
+			byte[] keyBytes = Base64.getDecoder().decode(splitted[1].trim());
 			X509EncodedKeySpec keySpec = new X509EncodedKeySpec(keyBytes);
 			PublicKey publicKey;
 			try {
@@ -138,7 +138,7 @@ public class PresenceServer extends HttpServlet {
 	}
 
 	@Override
-	public void doPut(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
+	public void doPut(HttpServletRequest request, HttpServletResponse response) throws IOException {
 		System.out.println("in doPut");
 		String req = request.getParameter("request");
 		if (req.equals("update")) {
@@ -147,10 +147,12 @@ public class PresenceServer extends HttpServlet {
 			String body = request.getReader().lines().collect(Collectors.joining());
 			System.out.println(body);
 
-			String[] splitted = body.split("::", 3);
-			InetAddress ip = InetAddress.getByName(splitted[1].trim());
-			String ps = splitted[0].trim();
-			byte[] keyBytes = Base64.getDecoder().decode(splitted[2].trim());
+			String[] splitted = body.split("::", 2);
+            InetAddress ip = InetAddress.getByName(request.getRemoteAddr());
+            if (ip.equals(InetAddress.getLocalHost())) {
+                ip = InetAddress.getByName("192.168.1.16");
+            }			String ps = splitted[0].trim();
+			byte[] keyBytes = Base64.getDecoder().decode(splitted[1].trim());
 			X509EncodedKeySpec keySpec = new X509EncodedKeySpec(keyBytes);
 			PublicKey publicKey;
 				try {

@@ -16,14 +16,14 @@ public class Session {
 	public Session(User distantUser) {
 		this.distantUser = distantUser;
 		this.messages = new ArrayList<Message>();
-		loadMessages();
+		/* loadMessages(); */
 	}
 
 	/**
 	 * Close the chat by saving all the messages exchanged.
 	 */
 	public void close() {
-		this.saveMessages();
+        /* this.saveMessages(); */
 	}
 
 	public User getDistantUser() {
@@ -43,7 +43,7 @@ public class Session {
 	}
 
 	/**
-	 * Retrieve all the messages previously exchanged and stored in a database locally. 
+	 * Retrieve all the messages previously exchanged and stored in a database locally.
 	 */
 	private void loadMessages(){
 		List<Message> historic = MessageLinkDB.getMessagesFromDB(this.distantUser.ip);
@@ -53,7 +53,7 @@ public class Session {
 	}
 
 	/**
-	 * Store in a database locally all the messages exchanged. 
+	 * Store in a database locally all the messages exchanged.
 	 */
 	private void saveMessages() {
 		MessageLinkDB.putMessagesInDB(this.messages, this.distantUser.ip);

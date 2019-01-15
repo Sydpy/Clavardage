@@ -126,7 +126,7 @@ public class ServerUserManager extends UserManager {
 		
         myUser = new MyUser(pseudo, InetAddress.getLoopbackAddress(), keyPair);
 
-		String body = myUser.pseudo + " :: " + myUser.ip.getHostAddress() + " :: " + Base64.getEncoder().encodeToString(myUser.publicKey.getEncoded());
+		String body = myUser.pseudo + " :: " + Base64.getEncoder().encodeToString(myUser.publicKey.getEncoded());
 		
 		OutputStream outputStream = con.getOutputStream();
 		outputStream.write(body.getBytes(charset));
@@ -169,7 +169,7 @@ public class ServerUserManager extends UserManager {
 			con.setRequestProperty("Accept-Charset", charset);
 			con.setRequestProperty("Content-Type", "text/plain");
 			
-			String body = myUser.pseudo + " :: " + myUser.ip.getHostAddress() + " :: " + Base64.getEncoder().encodeToString(myUser.publicKey.getEncoded());
+			String body = myUser.pseudo + " :: " + Base64.getEncoder().encodeToString(myUser.publicKey.getEncoded());
 			
 			OutputStream outputStream = con.getOutputStream();
 			outputStream.write(body.getBytes(charset));
