@@ -8,6 +8,8 @@ import org.etudinsa.clavardage.gui.LoginStage;
 import org.etudinsa.clavardage.sessions.SessionManager;
 import org.etudinsa.clavardage.users.UserManager;
 
+import java.net.InetAddress;
+import java.net.UnknownHostException;
 import java.util.Arrays;
 
 public class GUI extends Application {
@@ -17,14 +19,15 @@ public class GUI extends Application {
 
     private static HomeStage homeStage;
 
-    public static void main(String[] args) {
+    public static void main(String[] args) throws UnknownHostException {
 
         ManagerFactory managerFactory;
 
         if (Arrays.asList(args).contains("--mock")) {
             managerFactory = new ManagerFactory(true);
         } else {
-            managerFactory = new ManagerFactory(false);
+            //managerFactory = new ManagerFactory(false);
+            managerFactory = new ManagerFactory(InetAddress.getLocalHost());
         }
 
         userManager = managerFactory.getUserManager();

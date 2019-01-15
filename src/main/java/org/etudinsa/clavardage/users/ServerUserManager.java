@@ -52,7 +52,7 @@ public class ServerUserManager extends UserManager {
 				}				
 			}
 
-		}, 0, 60 * 1000);
+		}, 0, 30 * 1000);
 	}
 
 	synchronized private ArrayList<User> retrieveUserDB() {
