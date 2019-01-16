@@ -1,5 +1,6 @@
 # Clavardage
 Application de clavardage sur un LAN de manière décentralisée ou avec un serveur de présence.
+
 Exécution sur un LAN: 
 - lancer mongod et mongo dans un terminal
 - lancer org.etudinsa.clavardage.GUI
