@@ -1,8 +1,10 @@
 package org.etudinsa.clavardage;
 
 import javafx.application.Application;
+import javafx.event.EventHandler;
 import javafx.scene.image.Image;
 import javafx.stage.Stage;
+import javafx.stage.WindowEvent;
 import org.etudinsa.clavardage.gui.HomeStage;
 import org.etudinsa.clavardage.gui.LoginStage;
 import org.etudinsa.clavardage.sessions.SessionManager;
@@ -25,9 +27,11 @@ public class GUI extends Application {
 
         if (Arrays.asList(args).contains("--mock")) {
             managerFactory = new ManagerFactory(true);
+        } else if (args.length>1 && args[0].equals("server")){
+            managerFactory = new ManagerFactory(InetAddress.getByName(args[1]));
+            //managerFactory = new ManagerFactory(InetAddress.getLocalHost());
         } else {
-            //managerFactory = new ManagerFactory(false);
-            managerFactory = new ManagerFactory(InetAddress.getLocalHost());
+            managerFactory =new ManagerFactory(false);
         }
 
         userManager = managerFactory.getUserManager();
@@ -51,6 +55,17 @@ public class GUI extends Application {
         if (userManager.isConnected()) {
             homeStage.show();
             homeStage.refreshUserList();
+            homeStage.setOnCloseRequest(new EventHandler<WindowEvent>() {
+                @Override
+                public void handle(WindowEvent event) {
+                    try {
+                        userManager.leaveNetwork();
+                        System.exit(0);
+                    } catch (Exception e) {
+                        e.printStackTrace();
+                    }
+                }
+            });
         } else {
             System.exit(1);
         }

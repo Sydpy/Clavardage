@@ -16,14 +16,14 @@ public class Session {
 	public Session(User distantUser) {
 		this.distantUser = distantUser;
 		this.messages = new ArrayList<Message>();
-        loadMessages();
+        //loadMessages();
 	}
 
 	/**
 	 * Close the chat by saving all the messages exchanged.
 	 */
 	public void close() {
-        this.saveMessages();
+        //this.saveMessages();
 	}
 
 	public User getDistantUser() {
