@@ -26,6 +26,7 @@ public abstract class UserManager {
 
     public abstract void joinNetwork(String pseudo, KeyPair keyPair) throws Exception;
     public abstract void leaveNetwork() throws Exception;
+    public abstract void changePseudo(String pseudo) throws Exception;
     public abstract User getUserByIp(InetAddress ip);
     public abstract User getUserByPseudo(String pseudo);
     public abstract MyUser getMyUser();

@@ -11,7 +11,7 @@ import java.util.Objects;
 
 public class User implements Serializable {
 
-    public final String pseudo;
+    public String pseudo;
     public final InetAddress ip;
     public final PublicKey publicKey;
 
@@ -19,6 +19,10 @@ public class User implements Serializable {
         this.pseudo = pseudo;
         this.ip = ip;
         this.publicKey = publicKey;
+    }
+
+    public void setPseudo(String pseudo) {
+        this.pseudo = pseudo;
     }
 
     protected byte[] toByteArray(Object o) throws IOException {

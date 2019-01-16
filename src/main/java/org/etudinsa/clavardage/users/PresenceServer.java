@@ -7,6 +7,7 @@ import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.net.InetAddress;
+import java.net.UnknownHostException;
 import java.security.KeyFactory;
 import java.security.NoSuchAlgorithmException;
 import java.security.PublicKey;
@@ -19,7 +20,14 @@ import java.util.stream.Collectors;
 
 public class PresenceServer extends HttpServlet {
 
+	private InetAddress myIP;
+
 	public PresenceServer() {
+		try {
+			myIP = InetAddress.getByName("192.168.1.16");
+		} catch (UnknownHostException e) {
+			e.printStackTrace();
+		}
 	}
 
 	private List<User> myDb = new ArrayList<>();
@@ -65,7 +73,7 @@ public class PresenceServer extends HttpServlet {
 			String[] splitted = body.split("::", 2);
 			InetAddress ip = InetAddress.getByName(request.getRemoteAddr());
 			if (ip.equals(InetAddress.getLocalHost())) {
-			    ip = InetAddress.getByName("192.168.1.16");
+			    ip = myIP;
             }
 			String ps = splitted[0].trim();
 			byte[] keyBytes = Base64.getDecoder().decode(splitted[1].trim());
@@ -113,8 +121,9 @@ public class PresenceServer extends HttpServlet {
 			String[] splitted = body.split("::", 2);
             InetAddress ip = InetAddress.getByName(request.getRemoteAddr());
             if (ip.equals(InetAddress.getLocalHost())) {
-                ip = InetAddress.getByName("192.168.1.16");
-            }			String ps = splitted[0].trim();
+                ip = myIP;
+            }
+            String ps = splitted[0].trim();
 			byte[] keyBytes = Base64.getDecoder().decode(splitted[1].trim());
 			X509EncodedKeySpec keySpec = new X509EncodedKeySpec(keyBytes);
 			PublicKey publicKey;
@@ -150,8 +159,9 @@ public class PresenceServer extends HttpServlet {
 			String[] splitted = body.split("::", 2);
             InetAddress ip = InetAddress.getByName(request.getRemoteAddr());
             if (ip.equals(InetAddress.getLocalHost())) {
-                ip = InetAddress.getByName("192.168.1.16");
-            }			String ps = splitted[0].trim();
+                ip = myIP;
+            }
+            String ps = splitted[0].trim();
 			byte[] keyBytes = Base64.getDecoder().decode(splitted[1].trim());
 			X509EncodedKeySpec keySpec = new X509EncodedKeySpec(keyBytes);
 			PublicKey publicKey;

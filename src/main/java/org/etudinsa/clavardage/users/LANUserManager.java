@@ -70,6 +70,10 @@ public class LANUserManager extends UserManager {
         connected = false;
     }
 
+    @Override
+    public void changePseudo(String pseudo) throws Exception {
+    }
+
     /**
      * @param ip
      * @return the User instance based on the ip

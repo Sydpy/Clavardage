@@ -202,7 +202,46 @@ public class ServerUserManager extends UserManager {
 			connected = false;
 		}
 
-		@Override
+	@Override
+	public void changePseudo(String pseudo) throws Exception {
+
+		if (!connected) throw new Exception("User not connected");
+
+		URL url = new URL(serverUrl + "?" + String.format("request=%s", URLEncoder.encode("update", charset)));
+		HttpURLConnection con = (HttpURLConnection) url.openConnection();
+		con.setRequestMethod("PUT");
+		con.setDoOutput(true);
+		con.setRequestProperty("Accept-Charset", charset);
+		con.setRequestProperty("Content-Type", "text/plain");
+
+		String body = pseudo + " :: " + Base64.getEncoder().encodeToString(myUser.publicKey.getEncoded());
+
+		OutputStream outputStream = con.getOutputStream();
+		outputStream.write(body.getBytes(charset));
+		outputStream.close();
+
+		BufferedReader in;
+		StringBuffer contentB = new StringBuffer();
+		String inputLine;
+		if (con.getResponseCode() != 200) {
+			in = new BufferedReader(new InputStreamReader(con.getErrorStream()));
+			while ((inputLine = in.readLine()) != null) {
+				contentB.append(inputLine);
+			}
+			in.close();
+			con.disconnect();
+			throw new Exception(contentB.toString());
+		}
+		in = new BufferedReader(new InputStreamReader(con.getInputStream()));
+		while ((inputLine = in.readLine()) != null) {
+			contentB.append(inputLine);
+		}
+		myUser.setPseudo(pseudo);
+		in.close();
+		con.disconnect();
+	}
+
+	@Override
 		public User getUserByIp(InetAddress ip) {
 			synchronized (userDB) {
 				userDB = retrieveUserDB();

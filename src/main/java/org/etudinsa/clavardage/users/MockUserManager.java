@@ -71,6 +71,10 @@ public class MockUserManager extends UserManager {
     }
 
     @Override
+    public void changePseudo(String pseudo) throws Exception {
+    }
+
+    @Override
     public User getUserByIp(InetAddress ip) {
 
         for (User user : userDB) {
