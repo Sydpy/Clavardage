@@ -36,10 +36,10 @@ public class MessageLinkDB {
 		messages = new ArrayList<Message>();
 		
 		// Connect to MongoDB instance running on local host
-		// Access database named 'test'
+		// Access database named 'clavardageDB'
 		MongoClient mongoClient = new MongoClient();
 		
-		MongoDatabase database = mongoClient.getDatabase("test");
+		MongoDatabase database = mongoClient.getDatabase("clavardageDB");
 
 		// Access collection named with the ip address of the distant use
 		MongoCollection<Document> collection = database.getCollection(ip.toString());
@@ -55,9 +55,9 @@ public class MessageLinkDB {
 	
 	public static void putMessagesInDB (List<Message> msgList, InetAddress ip) {
 		// Connect to MongoDB instance running on local host
-		// Access database named 'test'
+		// Access database named 'clavardageDB'
 		MongoClient mongoClient = new MongoClient();
-		MongoDatabase database = mongoClient.getDatabase("test");
+		MongoDatabase database = mongoClient.getDatabase("clavardageDB");
 
 		// Access collection named with the ip address of the distant use
 		MongoCollection<Document> collection = database.getCollection(ip.toString());

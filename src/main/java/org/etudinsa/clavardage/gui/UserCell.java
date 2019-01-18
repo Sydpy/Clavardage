@@ -28,25 +28,19 @@ public class UserCell extends ListCell<User> {
         this.user = user;
 
         if(empty || user == null) {
-
             setText(null);
             setGraphic(null);
-
         } else {
             if (loader == null) {
                 loader = new FXMLLoader(getClass().getClassLoader().getResource("fxml/usercell.fxml"));
                 loader.setController(this);
-
                 try {
                     loader.load();
                 } catch (IOException e) {
                     e.printStackTrace();
                 }
-
             }
-
             userLabel.setText(user.pseudo);
-
             setText(null);
             setGraphic(flowPane);
         }

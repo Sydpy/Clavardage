@@ -4,9 +4,9 @@ import javax.servlet.ServletException;
 import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
-import java.io.IOException;
-import java.io.PrintWriter;
+import java.io.*;
 import java.net.InetAddress;
+import java.net.URL;
 import java.net.UnknownHostException;
 import java.security.KeyFactory;
 import java.security.NoSuchAlgorithmException;
@@ -23,17 +23,31 @@ public class PresenceServer extends HttpServlet {
 	private InetAddress myIP;
 
 	public PresenceServer() {
-		try {
-			myIP = InetAddress.getByName("192.168.1.16");
-		} catch (UnknownHostException e) {
-			e.printStackTrace();
-		}
 	}
 
 	private List<User> myDb = new ArrayList<>();
 
 	public void init() throws ServletException {
-		
+		URL resource = this.getClass().getClassLoader().getResource("serverIP.txt");
+		//System.out.println("url : " + resource.getPath());
+		File file = new File(resource.getPath());
+		if (file == null) {
+			System.out.println("null file");
+		} else {
+			//System.out.println("file found");
+			BufferedReader br = null;
+			try {
+				br = new BufferedReader(new FileReader(file));
+				String st;
+				while ((st = br.readLine()) != null) {
+					//System.out.println(st);
+					this.myIP = InetAddress.getByName(st);
+				}
+			} catch (IOException e) {
+				e.printStackTrace();
+			}
+		}
+		System.out.println("my ip " + this.myIP.getHostAddress());
 	}
 
 	public void doGet(HttpServletRequest request, HttpServletResponse response)

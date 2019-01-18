@@ -60,6 +60,7 @@ public class GUI extends Application {
                 public void handle(WindowEvent event) {
                     try {
                         userManager.leaveNetwork();
+                        sessionManager.closeAllSessions();
                         System.exit(0);
                     } catch (Exception e) {
                         e.printStackTrace();

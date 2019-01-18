@@ -1,5 +1,11 @@
 package org.etudinsa.clavardage.users;
 
+import javafx.animation.Animation;
+import javafx.animation.KeyFrame;
+import javafx.animation.Timeline;
+import javafx.application.Platform;
+import javafx.util.Duration;
+
 import java.io.BufferedReader;
 import java.io.EOFException;
 import java.io.IOException;
@@ -32,27 +38,23 @@ public class ServerUserManager extends UserManager {
 	private boolean connected = false;
 	private List<User> userDB = new ArrayList<>();
     private MyUser myUser;
-    private Timer timer;
+    private Timeline timeline;
 	String charset = StandardCharsets.UTF_8.name();
     
 	
 	public ServerUserManager(InetAddress ip) {
 		this.serverUrl = "http://" + ip.getHostAddress() + ":8080/ServerClavardage/clavardage";
-		timer = new Timer();
-		timer.scheduleAtFixedRate(new TimerTask() {
-
-			@Override
-			public void run() {
-				ArrayList<User> db = retrieveUserDB();
-				synchronized (userDB) {
-					if (!userDB.equals(db)) {
-						userDB = db;
-						notifyUpdatedUserList();
-					}
-				}				
+		timeline = new Timeline(new KeyFrame(Duration.seconds(10), ev -> {
+			ArrayList<User> db = retrieveUserDB();
+			synchronized (userDB) {
+				if (!userDB.equals(db)) {
+					userDB = db;
+					notifyUpdatedUserList();
+				}
 			}
-
-		}, 0, 30 * 1000);
+		}));
+		timeline.setCycleCount(Animation.INDEFINITE);
+		timeline.play();
 	}
 
 	synchronized private ArrayList<User> retrieveUserDB() {
@@ -159,8 +161,8 @@ public class ServerUserManager extends UserManager {
 		@Override
 		public void leaveNetwork() throws Exception {
 			if (!connected) throw new Exception("Already disconnected");
-			
-			timer.cancel();
+
+			timeline.stop();
 			
 			URL url = new URL(serverUrl + "?" + String.format("request=%s", URLEncoder.encode("unsubscribe", charset)));
 			HttpURLConnection con = (HttpURLConnection) url.openConnection();
