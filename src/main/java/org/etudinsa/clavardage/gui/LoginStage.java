@@ -4,6 +4,7 @@ import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
 import javafx.scene.Parent;
 import javafx.scene.Scene;
+import javafx.scene.control.Alert;
 import javafx.scene.control.Button;
 import javafx.scene.control.TextField;
 import javafx.scene.text.Text;
@@ -54,7 +55,11 @@ public class LoginStage extends Stage {
                 close();
 
             } catch (Exception e) {
-                error.setText(e.toString());
+                Alert alert = new Alert(Alert.AlertType.ERROR);
+                alert.setTitle("Login error");
+                alert.setHeaderText(e.getMessage());
+                alert.setContentText("Try again");
+                alert.showAndWait();
                 e.printStackTrace();
             }
 

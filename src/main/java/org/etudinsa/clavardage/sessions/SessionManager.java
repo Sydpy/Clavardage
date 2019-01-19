@@ -83,6 +83,15 @@ public abstract class SessionManager {
         }
     }
 
+    public void closeAllSessions() {
+        if (this.sessions != null) {
+            for (Session s: this.sessions) {
+                s.close();
+            }
+            this.sessions.clear();
+        }
+    }
+
     /**
      * Retrieve the chat with the user with the given pseudo or create it if it doesn't exist.
      * @param pseudo of the distant user
