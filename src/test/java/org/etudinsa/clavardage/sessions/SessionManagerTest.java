@@ -3,7 +3,6 @@
  */
 package org.etudinsa.clavardage.sessions;
 
-import org.etudinsa.clavardage.users.LANUserManager;
 import org.etudinsa.clavardage.users.MockUserManager;
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
@@ -22,7 +21,7 @@ public class SessionManagerTest {
 	
 	private static final String myPseudo = "Joker";
 	private static final String wrongPseudo = "Harley";
-	private static LANUserManager userManager;
+	private static MockUserManager userManager;
 	private static SessionManagerImpl sessionManager;
 
 	/**
@@ -36,7 +35,7 @@ public class SessionManagerTest {
         rng.setSeed(new Date().getTime());
         keyGenerator.initialize(1024, rng);
 
-        userManager = new LANUserManager();
+        userManager = new MockUserManager();
         sessionManager = new SessionManagerImpl(userManager);
         userManager.joinNetwork(myPseudo,keyGenerator.generateKeyPair());
 	}

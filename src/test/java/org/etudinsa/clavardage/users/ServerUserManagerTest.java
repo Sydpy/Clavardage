@@ -1,16 +1,10 @@
 package org.etudinsa.clavardage.users;
 
-import org.junit.After;
-import org.junit.Before;
-import org.junit.Test;
-
 import java.net.InetAddress;
 import java.security.KeyPair;
 import java.security.KeyPairGenerator;
 import java.security.SecureRandom;
 import java.util.Date;
-
-import static org.junit.Assert.*;
 
 public class ServerUserManagerTest {
 
@@ -20,8 +14,7 @@ public class ServerUserManagerTest {
     private static User myUser;
     private static ServerUserManager userManager;
 
-    @Before
-    public void setUp() throws Exception {
+    private static void setUp() throws Exception {
         userManager = new ServerUserManager(InetAddress.getByName("192.168.1.16"));
         KeyPairGenerator keyGenerator = KeyPairGenerator.getInstance("RSA");
         SecureRandom rng = SecureRandom.getInstance("SHA1PRNG", "SUN");
@@ -32,122 +25,133 @@ public class ServerUserManagerTest {
         myUser = new User(myPseudo, myIP, myKeyPair.getPublic());
     }
 
-    @Test
-    public void testJoinNetworkWhenNotConnected() {
+    private static void testJoinNetworkWhenNotConnected() throws Exception {
         try {
             userManager.joinNetwork(myPseudo, myKeyPair);
             assert(userManager.isConnected());
             userManager.leaveNetwork();
         } catch (Exception e) {
-            fail("Should not throw exception " + e.getMessage());
+            throw new Exception("Should not throw exception " + e.getMessage());
         }
     }
 
-    @Test
-    public void testJoinNetworkWhenAlreadyConnected() {
+    private static void testJoinNetworkWhenAlreadyConnected() throws Exception {
         try {
             userManager.joinNetwork(myPseudo, myKeyPair);
             assert(userManager.isConnected());
             userManager.joinNetwork(myPseudo, myKeyPair);
-            fail("Should throw exception");
+            throw new Exception("Should throw exception");
         } catch (Exception e) {
             assert(e.getMessage().equals("Already connected"));
         } finally {
             try {
                 userManager.leaveNetwork();
             } catch (Exception e) {
-                fail("Should not throw exception " + e.getMessage());
+                throw new Exception("Should not throw exception " + e.getMessage());
             }
         }
     }
 
-    @Test
-    public void testLeaveNetworkWhenConnected() {
+    private static void testLeaveNetworkWhenConnected() throws Exception {
         try {
             userManager.joinNetwork(myPseudo, myKeyPair);
             assert(userManager.isConnected());
             userManager.leaveNetwork();
             assert(!userManager.isConnected());
         } catch (Exception e) {
-            fail("Should not throw exception " + e.getMessage());
+            throw new Exception("Should not throw exception " + e.getMessage());
         }
     }
 
-    @Test
-    public void testLeaveNetworkWhenNotConnected() {
+    private static void testLeaveNetworkWhenNotConnected() {
         try {
             userManager.leaveNetwork();
-            fail("Should throw exception");
+            throw new Exception("Should throw exception");
         } catch (Exception e) {
             assert(e.getMessage().equals("Already disconnected"));
         }
     }
 
-    @Test
-    public void testGetUserByIpWithExistingUser() {
+    private static void testGetUserByIpWithExistingUser() throws Exception {
         try {
             userManager.joinNetwork(myPseudo, myKeyPair);
             assert(userManager.isConnected());
-            assertEquals(myUser,userManager.getUserByIp(myIP));
+            assert(myUser.equals(userManager.getUserByIp(myIP)));
             userManager.leaveNetwork();
         } catch (Exception e) {
-            fail("Should not throw exception " + e.getMessage());
+            throw new Exception("Should not throw exception " + e.getMessage());
         }
     }
 
-    @Test
-    public void testGetUserByIpWithNotExistingUser() {
+    private static void testGetUserByIpWithNotExistingUser() throws Exception {
         try {
-            assertNull(userManager.getUserByIp(myIP));
+            assert(userManager.getUserByIp(myIP).equals(null));
         } catch (Exception e) {
-            fail("Should not throw exception " + e.getMessage());
+            throw new Exception("Should not throw exception " + e.getMessage());
         }
     }
 
-    @Test
-    public void testGetUserByPseudoWithExistingUser() {
+    private static void testGetUserByPseudoWithExistingUser() throws Exception {
         try {
             userManager.joinNetwork(myPseudo, myKeyPair);
             assert(userManager.isConnected());
-            assertEquals(myUser,userManager.getUserByPseudo(myPseudo));
+            assert(myUser.equals(userManager.getUserByPseudo(myPseudo)));
             userManager.leaveNetwork();
         } catch (Exception e) {
-            fail("Should not throw exception " + e.getMessage());
+            throw new Exception("Should not throw exception " + e.getMessage());
         }
     }
 
-    @Test
-    public void testGetUserByPseudoWithNotExistingUser() {
+    private static void testGetUserByPseudoWithNotExistingUser() throws Exception {
         try {
-            assertNull(userManager.getUserByPseudo(myPseudo));
+            assert(userManager.getUserByPseudo(myPseudo).equals(null));
         } catch (Exception e) {
-            fail("Should not throw exception " + e.getMessage());
+            throw new Exception("Should not throw exception " + e.getMessage());
         }
     }
 
-    @Test
-    public void testgetUserDBWithOneUser() {
+    private static void testgetUserDBWithOneUser() throws Exception {
         try {
             userManager.joinNetwork(myPseudo,myKeyPair);
             User[] expected = new User[1];
             expected[0] = myUser;
+            User[] real;
             assert(userManager.isConnected());
-            assertArrayEquals(expected,userManager.getUserDB());
+            real = userManager.getUserDB();
+            assert(real.length == 1);
+            assert(real[0].equals(myUser));
             userManager.leaveNetwork();
         } catch (Exception e) {
-            fail("Should not throw exception " + e.getMessage());
+            throw new Exception("Should not throw exception " + e.getMessage());
         }
 
     }
 
-    @Test
-    public void testgetUserDBWithoutUser() {
+    private static void testgetUserDBWithoutUser() throws Exception {
         try {
-            assertEquals(0, userManager.getUserDB().length);
+            assert(userManager.getUserDB().length == 0);
         } catch (Exception e) {
-            fail("Should not throw exception " + e.getMessage());
+            throw new Exception("Should not throw exception " + e.getMessage());
         }
 
     }
 
+    public static void main (String[] args) {
+        try {
+            setUp();
+            testJoinNetworkWhenAlreadyConnected();
+            testJoinNetworkWhenNotConnected();
+            testGetUserByIpWithExistingUser();
+            testGetUserByIpWithNotExistingUser();
+            testGetUserByPseudoWithExistingUser();
+            testGetUserByPseudoWithNotExistingUser();
+            testgetUserDBWithOneUser();
+            testgetUserDBWithoutUser();
+            testLeaveNetworkWhenConnected();
+            testLeaveNetworkWhenNotConnected();
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+
+    }
 }
