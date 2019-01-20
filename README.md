@@ -21,6 +21,10 @@ La sauvegarde des messages se fait grâceà mongodb, il vous faudra donc lancer 
 ```
 sudo systemctl start mongodb
 ```
+ou alors 
+```
+sudo mongod
+```
 
 #### Tests
 Pour lancer les tests `mvn test`
