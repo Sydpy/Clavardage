@@ -12,12 +12,12 @@ mvn clean install
 ```
 
 Cela vous produira 2 archives dans le dossier `target/`
-* `clavardage-1.0-SNAPSHOT.jar` : utilisé pour lancer le client
+* `clavardage-1.0-SNAPSHOT.jar` : utilisée pour lancer le client
 * `clavardage-1.0-SNAPSHOT.war` : utilisée pour lancer le server
 
-### Éxécution
+### Exécution
 
-La sauvegarde des messages se fait grâceà mongodb, il vous faudra donc lancer le daemon de mongodb avant de lancer le programme :
+La sauvegarde des messages se fait grâce à mongodb, il vous faudra donc lancer le daemon de mongodb avant de lancer le programme :
 ```
 sudo systemctl start mongodb
 ```

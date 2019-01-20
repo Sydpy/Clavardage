@@ -29,7 +29,6 @@ public class GUI extends Application {
             managerFactory = new ManagerFactory(true);
         } else if (args.length>1 && args[0].equals("server")){
             managerFactory = new ManagerFactory(InetAddress.getByName(args[1]));
-            //managerFactory = new ManagerFactory(InetAddress.getLocalHost());
         } else {
             managerFactory =new ManagerFactory(false);
         }

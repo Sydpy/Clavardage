@@ -286,9 +286,10 @@ public class CLI implements UserObserver, SessionObserver, Runnable {
 
         if (Arrays.asList(args).contains("--mock")) {
             managerFactory = new ManagerFactory(true);
+        } else if (args.length>1 && args[0].equals("server")){
+            managerFactory = new ManagerFactory(InetAddress.getByName(args[1]));
         } else {
-//            managerFactory = new ManagerFactory(false);
-        	managerFactory = new ManagerFactory(InetAddress.getLocalHost());
+            managerFactory =new ManagerFactory(false);
         }
 
         userManager = managerFactory.getUserManager();
